@@ -5,10 +5,12 @@ import * as THREE from 'three';
 
 // Constants
 const SPACING = 5;
+// Arrange 8 projects in two columns to leave the center path (X=0) completely clear.
 const positions = [
-  [-1, -1], [0, -1], [1, -1],
-  [-1, 0],           [1, 0],
-  [-1, 1],  [0, 1],  [1, 1]
+  [-1, -1.5], [1, -1.5],
+  [-1, -0.5], [1, -0.5],
+  [-1, 0.5],  [1, 0.5],
+  [-1, 1.5],  [1, 1.5]
 ];
 
 // --- Environment Props ---
@@ -17,14 +19,14 @@ function WarehouseBuilding() {
   return (
     <group position={[0, 0, -16]} scale={[0.55, 0.55, 0.55]}>
       {/* Bottom Half (White) */}
-      <mesh position={[0, 3, 0]} castShadow receiveShadow>
-        <boxGeometry args={[60, 6, 10]} />
+      <mesh position={[0, 3, -15]} castShadow receiveShadow>
+        <boxGeometry args={[60, 6, 40]} />
         <meshStandardMaterial color="#f0efe9" roughness={0.9} />
       </mesh>
       
       {/* Top Half (Dark Gray) */}
-      <mesh position={[0, 9, 0]} castShadow receiveShadow>
-        <boxGeometry args={[60, 6, 10]} />
+      <mesh position={[0, 9, -15]} castShadow receiveShadow>
+        <boxGeometry args={[60, 6, 40]} />
         <meshStandardMaterial color="#2a2f35" roughness={0.9} />
       </mesh>
       
@@ -130,12 +132,6 @@ function WarehouseBuilding() {
             );
          })}
       </group>
-      
-      {/* Flagpole */}
-      <mesh position={[-12, 6, 12]} castShadow>
-         <cylinderGeometry args={[0.05, 0.05, 12]} />
-         <meshStandardMaterial color="#ccc" metalness={0.8} />
-      </mesh>
     </group>
   );
 }
@@ -161,32 +157,62 @@ function LowPolyTree({ position, scale = 1 }) {
   );
 }
 
-function Cloud({ position, speed = 0.5, scale = 1 }) {
-  const ref = useRef();
-  useFrame((state, delta) => {
-    if (ref.current) {
-      ref.current.position.x += speed * delta;
-      if (ref.current.position.x > 35) ref.current.position.x = -35;
+function ArgentineFlag({ position }) {
+  const flagRef = useRef();
+  
+  useFrame((state) => {
+    if (flagRef.current) {
+      // Gentle flutter animation
+      flagRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 2) * 0.1;
+      flagRef.current.position.y = 7 + Math.sin(state.clock.elapsedTime * 4) * 0.05;
     }
   });
 
   return (
-    <group ref={ref} position={position} scale={[scale, scale, scale]}>
-      <mesh castShadow position={[0, 0, 0]}>
-        <boxGeometry args={[4, 1.5, 2]} />
-        <meshStandardMaterial color="#fff" roughness={1} transparent opacity={0.9} />
+    <group position={position}>
+      {/* Square concrete base */}
+      <mesh position={[0, 0.2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[2, 0.4, 2]} />
+        <meshStandardMaterial color="#d5d3cc" roughness={0.9} />
       </mesh>
-      <mesh castShadow position={[1.5, 0.5, 0.5]}>
-        <boxGeometry args={[2, 1.5, 2]} />
-        <meshStandardMaterial color="#fff" roughness={1} transparent opacity={0.9} />
+      
+      {/* Silver Mast */}
+      <mesh position={[0, 4.2, 0]} castShadow>
+        <cylinderGeometry args={[0.06, 0.08, 8]} />
+        <meshStandardMaterial color="#a0a0a0" metalness={0.8} roughness={0.2} />
       </mesh>
-      <mesh castShadow position={[-1.5, 0.2, -0.5]}>
-        <boxGeometry args={[2.5, 1.2, 2.5]} />
-        <meshStandardMaterial color="#fff" roughness={1} transparent opacity={0.9} />
-      </mesh>
+      
+      {/* Flag */}
+      <group ref={flagRef} position={[0, 7, 0]}>
+        {/* Attached to the mast (offset right) */}
+        <group position={[1.5, 0, 0]}>
+          {/* Top Blue Strip */}
+          <mesh position={[0, 0.6, 0]} castShadow>
+            <boxGeometry args={[3, 0.6, 0.05]} />
+            <meshStandardMaterial color="#75AADB" roughness={1} />
+          </mesh>
+          {/* Middle White Strip */}
+          <mesh position={[0, 0, 0]} castShadow>
+            <boxGeometry args={[3, 0.6, 0.05]} />
+            <meshStandardMaterial color="#FFFFFF" roughness={1} />
+          </mesh>
+          {/* Sun */}
+          <mesh position={[0, 0, 0.03]}>
+             <boxGeometry args={[0.3, 0.3, 0.05]} />
+             <meshStandardMaterial color="#F6EB61" roughness={1} />
+          </mesh>
+          {/* Bottom Blue Strip */}
+          <mesh position={[0, -0.6, 0]} castShadow>
+            <boxGeometry args={[3, 0.6, 0.05]} />
+            <meshStandardMaterial color="#75AADB" roughness={1} />
+          </mesh>
+        </group>
+      </group>
     </group>
   );
 }
+
+// Removed Cloud component
 
 function Particles() {
   const count = 50;
@@ -233,11 +259,208 @@ function Particles() {
   );
 }
 
+function MovingCar({ startPos, speed, color, axis = 'x' }) {
+  const ref = useRef();
+  useFrame((state, delta) => {
+    if (ref.current) {
+      ref.current.position[axis] += speed * delta;
+      if (speed > 0 && ref.current.position[axis] > 100) ref.current.position[axis] = -100;
+      if (speed < 0 && ref.current.position[axis] < -100) ref.current.position[axis] = 100;
+    }
+  });
+
+  return (
+    <group ref={ref} position={startPos} rotation={[0, axis === 'z' ? Math.PI / 2 : 0, 0]}>
+      {/* Car Base */}
+      <mesh castShadow receiveShadow position={[0, 0.4, 0]}>
+        <boxGeometry args={[3, 0.6, 1.4]} />
+        <meshStandardMaterial color={color} roughness={0.4} />
+      </mesh>
+      {/* Car Top */}
+      <mesh castShadow position={[0, 0.9, 0]}>
+        <boxGeometry args={[1.6, 0.5, 1.2]} />
+        <meshStandardMaterial color={color} roughness={0.4} />
+      </mesh>
+      {/* Wheels */}
+      <mesh position={[-1, 0.1, 0.7]} castShadow><cylinderGeometry args={[0.2, 0.2, 0.1]} rotation={[Math.PI/2, 0, 0]} /><meshStandardMaterial color="#111" /></mesh>
+      <mesh position={[1, 0.1, 0.7]} castShadow><cylinderGeometry args={[0.2, 0.2, 0.1]} rotation={[Math.PI/2, 0, 0]} /><meshStandardMaterial color="#111" /></mesh>
+      <mesh position={[-1, 0.1, -0.7]} castShadow><cylinderGeometry args={[0.2, 0.2, 0.1]} rotation={[Math.PI/2, 0, 0]} /><meshStandardMaterial color="#111" /></mesh>
+      <mesh position={[1, 0.1, -0.7]} castShadow><cylinderGeometry args={[0.2, 0.2, 0.1]} rotation={[Math.PI/2, 0, 0]} /><meshStandardMaterial color="#111" /></mesh>
+    </group>
+  );
+}
+
+function MainGate({ position }) {
+  return (
+    <group position={position}>
+      {/* Left tall pillar */}
+      <mesh position={[-2, 1.25, 0]} castShadow>
+        <boxGeometry args={[0.15, 2.5, 0.15]} />
+        <meshStandardMaterial color="#111" roughness={0.8} />
+      </mesh>
+      {/* Right tall pillar */}
+      <mesh position={[2, 1.25, 0]} castShadow>
+        <boxGeometry args={[0.15, 2.5, 0.15]} />
+        <meshStandardMaterial color="#111" roughness={0.8} />
+      </mesh>
+      {/* Top beam */}
+      <mesh position={[0, 2.5, 0]} castShadow>
+        <boxGeometry args={[4.15, 0.15, 0.15]} />
+        <meshStandardMaterial color="#111" roughness={0.8} />
+      </mesh>
+      
+      {/* Inner Gate Details (solid open doors) */}
+      <mesh position={[-1.9, 1.25, -0.8]} rotation={[0, -Math.PI / 4, 0]} castShadow>
+         <planeGeometry args={[1.8, 2.4]} />
+         <meshStandardMaterial color="#222" roughness={0.7} />
+      </mesh>
+      <mesh position={[1.9, 1.25, -0.8]} rotation={[0, Math.PI / 4, 0]} castShadow>
+         <planeGeometry args={[1.8, 2.4]} />
+         <meshStandardMaterial color="#222" roughness={0.7} />
+      </mesh>
+    </group>
+  );
+}
+
+function ConcretePaths() {
+  return (
+    <group position={[0, -0.04, 0]}>
+      {/* Main path from building door through the gate to the outer sidewalk */}
+      <mesh position={[0, 0.092, -1]} receiveShadow>
+        <boxGeometry args={[3, 0.02, 28]} />
+        <meshStandardMaterial color="#e5e3dc" roughness={0.9} />
+      </mesh>
+    </group>
+  );
+}
+
+function LBand({ color, roughness, y, innerX, innerZ, width, extX, extZ, showGrid, showDashes }) {
+  const cX = innerX - width / 2;
+  const cZ = innerZ + width / 2;
+  
+  const frontLen = extX - innerX;
+  const frontCX = innerX + frontLen / 2;
+  
+  const leftLen = innerZ - extZ;
+  const leftCZ = innerZ - leftLen / 2;
+  
+  return (
+    <group position={[0, y, 0]}>
+      {/* Front Leg */}
+      <mesh position={[frontCX, 0, cZ]} receiveShadow>
+        <boxGeometry args={[frontLen, 0.1, width]} />
+        <meshStandardMaterial color={color} roughness={roughness} />
+        {showGrid && (
+          <mesh position={[0, 0.051, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+             <planeGeometry args={[frontLen, width, Math.floor(frontLen/2), 1]} />
+             <meshBasicMaterial color="#a3a098" wireframe transparent opacity={0.3} />
+          </mesh>
+        )}
+        {showDashes && Array.from({length: Math.floor(frontLen/4)}).map((_, i) => (
+           <mesh key={`dash_f_${i}`} position={[-frontLen/2 + 2 + i*4, 0.06, 0]}>
+             <boxGeometry args={[2, 0.02, 0.2]} />
+             <meshStandardMaterial color="#fff" />
+           </mesh>
+        ))}
+      </mesh>
+
+      {/* Left Leg */}
+      <mesh position={[cX, 0, leftCZ]} receiveShadow>
+        <boxGeometry args={[width, 0.1, leftLen]} />
+        <meshStandardMaterial color={color} roughness={roughness} />
+        {showGrid && (
+          <mesh position={[0, 0.051, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+             <planeGeometry args={[width, leftLen, 1, Math.floor(leftLen/2)]} />
+             <meshBasicMaterial color="#a3a098" wireframe transparent opacity={0.3} />
+          </mesh>
+        )}
+        {showDashes && Array.from({length: Math.floor(leftLen/4)}).map((_, i) => (
+           <mesh key={`dash_l_${i}`} position={[0, 0.06, -leftLen/2 + 2 + i*4]}>
+             <boxGeometry args={[0.2, 0.02, 2]} />
+             <meshStandardMaterial color="#fff" />
+           </mesh>
+        ))}
+      </mesh>
+
+      {/* Corner Piece */}
+      <mesh position={[cX, 0, cZ]} receiveShadow>
+        <boxGeometry args={[width, 0.1, width]} />
+        <meshStandardMaterial color={color} roughness={roughness} />
+        {showGrid && (
+          <mesh position={[0, 0.051, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+             <planeGeometry args={[width, width, 1, 1]} />
+             <meshBasicMaterial color="#a3a098" wireframe transparent opacity={0.3} />
+          </mesh>
+        )}
+      </mesh>
+    </group>
+  );
+}
+
+function SidewalkAndStreet() {
+  const extX = 100;
+  const extZ = -100;
+
+  return (
+    <group position={[0, -0.14, 0]}>
+      <LBand color="#6b8c54" roughness={1} y={0.05} innerX={-14} innerZ={9} width={3} extX={extX} extZ={extZ} />
+      <LBand color="#d5d3cc" roughness={0.9} y={0.06} innerX={-17} innerZ={12} width={2} extX={extX} extZ={extZ} showGrid />
+      <LBand color="#8b7355" roughness={1} y={0.04} innerX={-19} innerZ={14} width={2} extX={extX} extZ={extZ} />
+      <LBand color="#3a3c3f" roughness={0.8} y={0.02} innerX={-21} innerZ={16} width={10} extX={extX} extZ={extZ} showDashes />
+    </group>
+  );
+}
+
+function FenceSegment({ position, rotation = [0, 0, 0], length }) {
+  const segments = Math.max(1, Math.floor(length / 2));
+  const step = length / segments;
+  
+  return (
+    <group position={position} rotation={rotation}>
+      <mesh position={[0, 0.6, 0]} castShadow>
+        <planeGeometry args={[length, 1.2]} />
+        <meshBasicMaterial color="#888" wireframe transparent opacity={0.2} />
+      </mesh>
+      <mesh position={[0, 1.2, 0]} castShadow>
+        <boxGeometry args={[length, 0.05, 0.05]} />
+        <meshStandardMaterial color="#888" />
+      </mesh>
+      <mesh position={[0, 0.1, 0]} castShadow>
+        <boxGeometry args={[length, 0.05, 0.05]} />
+        <meshStandardMaterial color="#888" />
+      </mesh>
+      {Array.from({ length: segments + 1 }).map((_, i) => (
+        <mesh key={`post_${i}`} position={[-length/2 + i * step, 0.6, 0]} castShadow>
+          <cylinderGeometry args={[0.08, 0.1, 1.4, 6]} />
+          <meshStandardMaterial color="#d5d3cc" roughness={0.9} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 function Scenery() {
   return (
     <group>
       {/* Warehouse Building in background */}
       <WarehouseBuilding />
+
+      {/* Argentine Flag (moved more left) */}
+      <ArgentineFlag position={[-12, 0, 4]} />
+
+      {/* Fences */}
+      <FenceSegment position={[-8, 0, 9]} length={12} /> {/* Front Left */}
+      <FenceSegment position={[51, 0, 9]} length={98} />  {/* Front Right (Extended to infinity) */}
+      <FenceSegment position={[-14, 0, -2]} rotation={[0, Math.PI / 2, 0]} length={22} /> {/* Side Left */}
+
+      {/* Main Entrance Gate */}
+      <MainGate position={[0, 0, 9]} />
+
+      {/* Sidewalk and Street */}
+      <SidewalkAndStreet />
+
+      {/* Concrete Paths on Grass */}
+      <ConcretePaths />
 
       {/* Trees */}
       <LowPolyTree position={[-10, 0, -12]} scale={1.5} />
@@ -247,20 +470,17 @@ function Scenery() {
       <LowPolyTree position={[-16, 0, 0]} scale={1.4} />
       <LowPolyTree position={[16, 0, 2]} scale={1.1} />
       
-      {/* Museum Benches */}
-      <mesh position={[-8, 0.25, 0]} castShadow receiveShadow>
-        <boxGeometry args={[3, 0.5, 1]} />
-        <meshStandardMaterial color="#d5d3cc" roughness={0.8} />
-      </mesh>
-      <mesh position={[8, 0.25, 8]} castShadow receiveShadow rotation={[0, Math.PI / 2, 0]}>
-        <boxGeometry args={[3, 0.5, 1]} />
-        <meshStandardMaterial color="#d5d3cc" roughness={0.8} />
-      </mesh>
+      {/* Moving Cars - Front Street */}
+      <MovingCar startPos={[-40, 0, 19]} speed={15} color="#c0392b" axis="x" />
+      <MovingCar startPos={[20, 0, 23]} speed={-12} color="#2980b9" axis="x" />
+      <MovingCar startPos={[-80, 0, 19]} speed={18} color="#27ae60" axis="x" />
+      <MovingCar startPos={[60, 0, 23]} speed={-14} color="#f39c12" axis="x" />
 
-      {/* Floating Clouds */}
-      <Cloud position={[-20, 12, -5]} speed={0.8} scale={1.5} />
-      <Cloud position={[10, 15, -15]} speed={0.4} scale={2} />
-      <Cloud position={[-5, 10, 15]} speed={1.2} scale={1.2} />
+      {/* Moving Cars - Left Street */}
+      <MovingCar startPos={[-24, 0, 40]} speed={-16} color="#8e44ad" axis="z" />
+      <MovingCar startPos={[-28, 0, -20]} speed={14} color="#16a085" axis="z" />
+      <MovingCar startPos={[-24, 0, -60]} speed={-15} color="#d35400" axis="z" />
+      <MovingCar startPos={[-28, 0, 80]} speed={17} color="#2c3e50" axis="z" />
     </group>
   );
 }
@@ -523,7 +743,7 @@ function SceneGroup({ projects, activeId, setActiveId }) {
     groupRef.current.position.z = THREE.MathUtils.lerp(groupRef.current.position.z, tZ, 4 * delta);
 
     // Zoom camera using orthographic zoom
-    const tZoom = activeId !== null ? 90 : 50; // Increased default zoom from 30 to 50
+    const tZoom = activeId !== null ? 90 : 40; // Decreased default zoom to show UNViMe text
     state.camera.zoom = THREE.MathUtils.lerp(state.camera.zoom, tZoom, 4 * delta);
     state.camera.updateProjectionMatrix();
   });
@@ -548,24 +768,24 @@ function SceneGroup({ projects, activeId, setActiveId }) {
       <Scenery />
       <Particles />
       
-      {/* Grass Patch under projects */}
-      <mesh position={[0, -0.05, -2]} receiveShadow>
-        <boxGeometry args={[28, 0.1, 22]} />
+      {/* Grass Patch under projects (extended right) */}
+      <mesh position={[43, -0.05, -2]} receiveShadow>
+        <boxGeometry args={[114, 0.1, 22]} />
         <meshStandardMaterial color="#6b8c54" roughness={1} />
         {/* Grass grid overlay */}
         <mesh position={[0, 0.051, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-           <planeGeometry args={[28, 22, 14, 11]} />
+           <planeGeometry args={[114, 22, 57, 11]} />
            <meshBasicMaterial color="#82a568" wireframe transparent opacity={0.6} />
         </mesh>
       </mesh>
 
       {/* Main Low-Poly Floor */}
       <mesh position={[0, -0.15, 0]} receiveShadow>
-        <boxGeometry args={[80, 0.1, 80]} />
+        <boxGeometry args={[200, 0.1, 200]} />
         <meshStandardMaterial color="#f6f4ee" roughness={1} />
         {/* Floor grid */}
         <mesh position={[0, 0.051, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-           <planeGeometry args={[80, 80, 40, 40]} />
+           <planeGeometry args={[200, 200, 100, 100]} />
            <meshBasicMaterial color="#e5e3dc" wireframe transparent opacity={0.6} />
         </mesh>
       </mesh>
@@ -575,26 +795,12 @@ function SceneGroup({ projects, activeId, setActiveId }) {
 
 export default function Story3D({ projects, active, onClose }) {
   const [activeId, setActiveId] = useState(null);
-  const audioRef = useRef(null);
 
-  // Manage audio
+  // Reset active ID when scene closes
   useEffect(() => {
-    if (active) {
-      const audioUrl = import.meta.env.BASE_URL + 'story-music.mp3';
-      audioRef.current = new Audio(audioUrl);
-      audioRef.current.loop = true;
-      audioRef.current.volume = 0.4;
-      audioRef.current.play().catch(e => console.log('Audio autoplay blocked', e));
-    } else {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+    if (!active) {
       setActiveId(null);
     }
-    return () => {
-      if (audioRef.current) audioRef.current.pause();
-    };
   }, [active]);
 
   if (!active) return null;
