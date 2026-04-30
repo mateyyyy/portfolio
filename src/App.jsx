@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Lenis from "lenis";
 import { GitHubCalendar } from "react-github-calendar";
+import Story3D from "./Story3D";
 
 // ─── CUSTOM CURSOR ────────────────────────────────────────────────────────────
 function CustomCursor() {
@@ -2039,7 +2040,8 @@ function App() {
 
       <MediaModal mediaModal={mediaModal} setMediaModal={setMediaModal} />
       <PeekingBot />
-      <ProjectGallery
+      <Story3D
+        projects={storyTimeline}
         active={storyActive}
         onClose={() => setStoryActive(false)}
       />
