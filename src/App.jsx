@@ -2099,13 +2099,11 @@ function App() {
         </button>
       )}
       <Suspense fallback={null}>
-        {storyActive && (
-          <Story3D
-            projects={storyTimeline}
-            active={storyActive}
-            onClose={() => setStoryActive(false)}
-          />
-        )}
+        <Story3D
+          projects={storyTimeline}
+          active={storyActive}
+          onClose={() => setStoryActive(false)}
+        />
       </Suspense>
     </>
   );

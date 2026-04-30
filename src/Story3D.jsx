@@ -13,6 +13,8 @@ import {
   Html,
   Billboard,
   Preload,
+  Text3D,
+  Center,
 } from "@react-three/drei";
 import * as THREE from "three";
 
@@ -30,6 +32,30 @@ const positions = [
 ];
 
 // --- Environment Props ---
+
+function InstancedRibs({ count, getPosition, getRotation, getScale, args, color }) {
+  const meshRef = useRef();
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  useEffect(() => {
+    if (!meshRef.current) return;
+    for (let i = 0; i < count; i++) {
+      dummy.position.set(...getPosition(i));
+      if (getRotation) dummy.rotation.set(...getRotation(i));
+      if (getScale) dummy.scale.set(...getScale(i));
+      dummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, dummy.matrix);
+    }
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  }, [count, getPosition, getRotation, getScale, dummy]);
+
+  return (
+    <instancedMesh ref={meshRef} args={[null, null, count]} castShadow receiveShadow>
+      <boxGeometry args={args} />
+      <meshStandardMaterial color={color} roughness={0.9} />
+    </instancedMesh>
+  );
+}
 
 function RoundTable({ position }) {
   return (
@@ -135,6 +161,21 @@ function WarehouseBuilding() {
         <meshStandardMaterial color="#2a2f35" roughness={0.9} flatShading />
       </mesh>
 
+      <InstancedRibs
+        count={101}
+        args={[35, 0.05, 0.12]}
+        color="#1a2026"
+        getPosition={(i) => [11 - 17.5, 14.6 - 0.6, -35 + i * 0.4]}
+        getRotation={() => [0, 0, 0.11]}
+      />
+      <InstancedRibs
+        count={101}
+        args={[35, 0.05, 0.12]}
+        color="#1a2026"
+        getPosition={(i) => [11 + 17.5, 14.6 - 0.6, -35 + i * 0.4]}
+        getRotation={() => [0, 0, -0.11]}
+      />
+
       <group key="win_front_left">
         <mesh position={[-16, 9.5, 5.05]}>
           <boxGeometry args={[3, 4, 0.2]} />
@@ -202,38 +243,24 @@ function WarehouseBuilding() {
         <meshStandardMaterial color="#e5e3dc" roughness={0.8} />
       </mesh>
 
-      {/* Unified Vertical Ribs (More noticeable effect requested) */}
-      {Array.from({ length: 53 }).map((_, i) => {
-        const xPos = -7.875 + i * 0.25;
-
-        // Determine whether this rib is on the left pillar, the middle roof overhang, or the right pillar
-        let height = 15.5;
-        let yPos = 7;
-        let zPos = 8.58;
-
-        // If it's in the gap between the two pillars, it only covers the Top Overhang height
-        if (xPos > -3.9 && xPos < 3.7) {
-          height = 2.5; // Match overhang height
-          yPos = 13.5;
-        }
-
-        // Right Pillar has slightly different Z depth
-        if (xPos >= 3.7) {
-          zPos = 8.58;
-        }
-
-        return (
-          <mesh
-            key={`rib_all_${i}`}
-            position={[xPos, yPos, zPos]}
-            castShadow
-            receiveShadow
-          >
-            <boxGeometry args={[0.15, height, 0.25]} />
-            <meshStandardMaterial color="#c0beb6" roughness={0.9} />
-          </mesh>
-        );
-      })}
+      <InstancedRibs
+        count={53}
+        args={[0.15, 1, 0.25]}
+        color="#c0beb6"
+        getPosition={(i) => {
+          const xPos = -7.875 + i * 0.25;
+          let yPos = 7;
+          let zPos = 8.58;
+          if (xPos > -3.9 && xPos < 3.7) yPos = 13.5;
+          return [xPos, yPos, zPos];
+        }}
+        getScale={(i) => {
+          const xPos = -7.875 + i * 0.25;
+          let height = 15.5;
+          if (xPos > -3.9 && xPos < 3.7) height = 2.5;
+          return [1, height, 1];
+        }}
+      />
 
       <mesh position={[-0.125, 6, 8.25]} castShadow receiveShadow>
         <boxGeometry args={[7.75, 1.5, 0.5]} />
@@ -252,18 +279,30 @@ function WarehouseBuilding() {
         Universidad Nacional de Villa Mercedes
       </Text>
 
-      <Text
-        position={[-6, 11, 8.8]}
-        fontSize={1.4}
-        color="#2a2f35"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.02}
-        outlineColor="#2a2f35"
-        fontWeight="bold"
-      >
-        UNViMe
-      </Text>
+      <group position={[-6, 11, 8.8]}>
+        <Center>
+          <Text3D
+            font="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json"
+            size={1.2}
+            height={0.1}
+            curveSegments={12}
+          >
+            UNViMe
+            <meshStandardMaterial color="#2a2f35" roughness={0.3} metalness={0.8} />
+          </Text3D>
+          {/* Outline/Backing */}
+          <Text3D
+            font="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json"
+            size={1.25}
+            height={0.02}
+            curveSegments={12}
+            position={[0, 0, -0.1]}
+          >
+            UNViMe
+            <meshBasicMaterial color="#ffffff" />
+          </Text3D>
+        </Center>
+      </group>
 
       <mesh position={[0, 7, 5]} castShadow receiveShadow>
         <boxGeometry args={[8, 14, 0.5]} />
@@ -406,9 +445,9 @@ function ArgentineFlag({ position }) {
   const flagRef = useRef();
   useFrame((state) => {
     if (flagRef.current) {
-      flagRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 2) * 0.1;
+      flagRef.current.rotation.y = Math.sin(state.clock.getElapsedTime() * 2) * 0.1;
       flagRef.current.position.y =
-        7 + Math.sin(state.clock.elapsedTime * 4) * 0.05;
+        7 + Math.sin(state.clock.getElapsedTime() * 4) * 0.05;
       invalidate();
     }
   });
@@ -466,14 +505,15 @@ function Particles() {
     particles.forEach((p, i) => {
       p.y += 0.01 * p.speed;
       if (p.y > 15) p.y = 0;
+      const time = state.clock.getElapsedTime();
       dummy.position.set(
-        p.x + Math.sin(state.clock.elapsedTime * p.speed + p.phase) * 0.5,
+        p.x + Math.sin(time * p.speed + p.phase) * 0.5,
         p.y,
-        p.z + Math.cos(state.clock.elapsedTime * p.speed + p.phase) * 0.5,
+        p.z + Math.cos(time * p.speed + p.phase) * 0.5,
       );
       dummy.rotation.set(
-        state.clock.elapsedTime * p.speed,
-        state.clock.elapsedTime * p.speed,
+        time * p.speed,
+        time * p.speed,
         0,
       );
       dummy.updateMatrix();
@@ -526,11 +566,14 @@ function MainGate({ position }) {
   );
 }
 
-function ConcretePaths() {
+function ConcretePaths({
+  boxArgs = [3, 0.02, 28],
+  position = [0, 0.092, -1],
+}) {
   return (
     <group position={[0, -0.04, 0]}>
-      <mesh position={[0, 0.092, -1]} receiveShadow>
-        <boxGeometry args={[3, 0.02, 28]} />
+      <mesh position={position} receiveShadow>
+        <boxGeometry args={boxArgs} />
         <meshStandardMaterial color="#e5e3dc" roughness={0.9} />
       </mesh>
     </group>
@@ -702,7 +745,58 @@ function FenceSegment({ position, rotation = [0, 0, 0], length }) {
   );
 }
 
-// ── SCENERY: autos ──────────────────────────────────────────────────
+function ConcreteBench({ position, rotation = [0, 0, 0] }) {
+  return (
+    <group position={position} rotation={rotation}>
+      {/* Top slab */}
+      <mesh position={[0, 0.45, 0]} castShadow receiveShadow>
+        <boxGeometry args={[3, 0.15, 0.8]} />
+        <meshStandardMaterial color="#d5d3cc" roughness={0.8} />
+      </mesh>
+      {/* Left leg */}
+      <mesh position={[-1.4, 0.225, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.2, 0.45, 0.8]} />
+        <meshStandardMaterial color="#d5d3cc" roughness={0.8} />
+      </mesh>
+      {/* Right leg */}
+      <mesh position={[1.4, 0.225, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.2, 0.45, 0.8]} />
+        <meshStandardMaterial color="#d5d3cc" roughness={0.8} />
+      </mesh>
+    </group>
+  );
+}
+
+function BicycleRack({ position, rotation = [0, 0, 0] }) {
+  const count = 6;
+  const spacing = 0.8;
+  return (
+    <group position={position} rotation={rotation}>
+      {/* Base rails */}
+      <mesh position={[0, 0.05, -0.3]} castShadow receiveShadow>
+        <boxGeometry args={[count * spacing - 0.6, 0.05, 0.05]} />
+        <meshStandardMaterial color="#222" />
+      </mesh>
+      <mesh position={[0, 0.05, 0.3]} castShadow receiveShadow>
+        <boxGeometry args={[count * spacing - 0.6, 0.05, 0.05]} />
+        <meshStandardMaterial color="#222" />
+      </mesh>
+      {/* Arches */}
+      {Array.from({ length: count }).map((_, i) => (
+        <mesh
+          key={i}
+          position={[-((count - 1) * spacing) / 2 + i * spacing, 0.05, 0]}
+          rotation={[0, Math.PI / 2, 0]}
+          castShadow
+        >
+          <torusGeometry args={[0.3, 0.03, 8, 12, Math.PI]} />
+          <meshStandardMaterial color="#222" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 function Scenery() {
   return (
     <group>
@@ -717,13 +811,34 @@ function Scenery() {
       />
       <MainGate position={[0, 0, 9]} />
       <SidewalkAndStreet />
-      <ConcretePaths />
+      <ConcretePaths boxArgs={[3, 0.02, 3]} position={[0, 0.1, 10.6]} />
+     {Array.from({ length: 9 }).map((_, i) => (
+      <ConcretePaths
+        key={i}
+        boxArgs={[3, 0.02, 1.5]}
+        position={[0, 0.1, 11.6 - i*2.6]}
+      />
+    ))}
+      <ConcretePaths
+        key={12}
+        boxArgs={[3, 0.02, 1.5]}
+        position={[0, 0.1, 11.6-2.6]}
+      />  
+      <ConcretePaths
+        key={12}
+        boxArgs={[4.3, 0.02, 1.8]}
+        position={[0, 0.1, -12.1]}
+      />  
       <LowPolyTree position={[-10, 0, -6]} scale={1.5} />
       <LowPolyTree position={[13, 0, -8]} scale={2} />
       <LowPolyTree position={[-12, 0, 8]} scale={1.2} />
       <LowPolyTree position={[15, 0, 5]} scale={1.8} />
       <LowPolyTree position={[-16, 0, 0]} scale={1.4} />
       <LowPolyTree position={[20, 0, 2]} scale={1.1} />
+      <ConcreteBench position={[-9, 0, -11.5]} />
+      <BicycleRack position={[15, 0, 7]} rotation={[0, 0, 0]} />
+      <BicycleRack position={[19, 0, 7]} rotation={[0, 0, 0]} />
+
     </group>
   );
 }
@@ -733,6 +848,8 @@ function Scenery() {
 function WalkingSprite({ url, scale = 1.5 }) {
   const ref = useRef();
   const groupRef = useRef();
+  const dir = useMemo(() => new THREE.Vector3(), []);
+  const imgUrl = useMemo(() => import.meta.env.BASE_URL + url, [url]);
 
   const stateRef = useRef({
     pos: new THREE.Vector3(
@@ -756,7 +873,7 @@ function WalkingSprite({ url, scale = 1.5 }) {
     const s = stateRef.current;
 
     if (s.isWalking) {
-      const dir = s.target.clone().sub(s.pos);
+      dir.copy(s.target).sub(s.pos);
       const dist = dir.length();
       if (dist < 0.1) {
         s.isWalking = false;
@@ -766,14 +883,16 @@ function WalkingSprite({ url, scale = 1.5 }) {
         s.pos.add(dir.multiplyScalar(s.speed * delta));
         if (dir.x > 0) s.facingRight = true;
         else if (dir.x < 0) s.facingRight = false;
+        const time = state.clock.getElapsedTime();
         ref.current.position.y =
-          Math.abs(Math.sin(state.clock.elapsedTime * 15)) * 0.15 + scale * 0.4;
-        ref.current.rotation.z = Math.sin(state.clock.elapsedTime * 15) * 0.05;
+          Math.abs(Math.sin(time * 15)) * 0.15 + scale * 0.4;
+        ref.current.rotation.z = Math.sin(time * 15) * 0.05;
       }
     } else {
       s.waitTime -= delta;
+      const time = state.clock.getElapsedTime();
       ref.current.position.y =
-        Math.sin(state.clock.elapsedTime * 3) * 0.05 + scale * 0.4;
+        Math.sin(time * 3) * 0.05 + scale * 0.4;
       ref.current.rotation.z = 0;
       if (s.waitTime <= 0) {
         s.isWalking = true;
@@ -791,11 +910,7 @@ function WalkingSprite({ url, scale = 1.5 }) {
   return (
     <group ref={groupRef}>
       <group ref={ref} rotation={[0, 0, 0]}>
-        <Image
-          url={import.meta.env.BASE_URL + url}
-          transparent
-          scale={[1, 1]}
-        />
+        <Image key={imgUrl} url={imgUrl} transparent scale={[1, 1]} />
       </group>
     </group>
   );
@@ -872,10 +987,11 @@ const ProjectFrame = React.memo(function ProjectFrame({
     if (imgRef.current) {
       const baseImgY = pedHeight + 1.5;
       const hoverOffset = hovered || isActive ? 0.4 : 0;
+      const time = state.clock.getElapsedTime();
       const tY =
         baseImgY +
         hoverOffset +
-        Math.sin(state.clock.elapsedTime * 2 + index) * 0.1;
+        Math.sin(time * 2 + index) * 0.1;
       const prev = imgRef.current.position.y;
       imgRef.current.position.y = THREE.MathUtils.lerp(prev, tY, 5 * delta);
       if (Math.abs(imgRef.current.position.y - prev) > 0.001) invalidate();
@@ -1144,17 +1260,6 @@ function SceneGroup({ projects, activeId, setActiveId }) {
 }
 
 // ── MAIN EXPORT ───────────────────────────────────────────────────────────────
-// Dispose geometries and materials on unmount
-function CleanupOnUnmount() {
-  const { gl } = useThree();
-  useEffect(() => {
-    return () => {
-      gl.dispose();
-    };
-  }, [gl]);
-  return null;
-}
-
 export default function Story3D({ projects, active, onClose }) {
   const [activeId, setActiveId] = useState(null);
 
@@ -1238,14 +1343,14 @@ export default function Story3D({ projects, active, onClose }) {
 
       {/* ── Canvas: frameloop="demand" → only renders when invalidate() called ── */}
       <Canvas
-        shadows
+        shadows={{ type: THREE.PCFShadowMap }}
         orthographic
         frameloop="demand"
         camera={{ position: [20, 20, 20], zoom: 50, near: -100, far: 100 }}
         onClick={(e) => {
           if (e.target === e.currentTarget) setActiveId(null);
         }}
-        gl={{ antialias: !isMobile, maxTextureSize: 1024 }}
+        gl={{ antialias: true, maxTextureSize: 2048 }}
       >
         <color attach="background" args={["#fdfbf2"]} />
         <fog attach="fog" args={["#fdfbf2", 30, 90]} />
@@ -1255,7 +1360,7 @@ export default function Story3D({ projects, active, onClose }) {
           intensity={1.8}
           color="#fffaf0"
           castShadow
-          shadow-mapSize={[isMobile ? 512 : 1024, isMobile ? 512 : 1024]}
+          shadow-mapSize={[256, 256]}
           shadow-bias={-0.0001}
         />
 
