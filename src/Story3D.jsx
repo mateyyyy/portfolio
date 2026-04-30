@@ -11,6 +11,340 @@ const positions = [
   [-1, 1],  [0, 1],  [1, 1]
 ];
 
+// --- Environment Props ---
+
+function WarehouseBuilding() {
+  return (
+    <group position={[0, 0, -16]} scale={[0.55, 0.55, 0.55]}>
+      {/* Bottom Half (White) */}
+      <mesh position={[0, 3, 0]} castShadow receiveShadow>
+        <boxGeometry args={[60, 6, 10]} />
+        <meshStandardMaterial color="#f0efe9" roughness={0.9} />
+      </mesh>
+      
+      {/* Top Half (Dark Gray) */}
+      <mesh position={[0, 9, 0]} castShadow receiveShadow>
+        <boxGeometry args={[60, 6, 10]} />
+        <meshStandardMaterial color="#2a2f35" roughness={0.9} />
+      </mesh>
+      
+      {/* White Corrugated Facade Block */}
+      <mesh position={[0, 7, 5.5]} castShadow receiveShadow>
+        <boxGeometry args={[16, 14, 1]} />
+        <meshStandardMaterial color="#e5e3dc" roughness={0.8} />
+      </mesh>
+
+      {/* Left Pillar */}
+      <mesh position={[-6, 7, 6.2]} castShadow receiveShadow>
+        <boxGeometry args={[4, 14, 0.5]} />
+        <meshStandardMaterial color="#e5e3dc" roughness={0.8} />
+      </mesh>
+
+      {/* Vertical Ribs (Corrugated Metal Effect) */}
+      {Array.from({length: 16}).map((_, i) => (
+         <mesh key={i} position={[-7.5 + i * 1, 7, 6.1]}>
+            <boxGeometry args={[0.1, 14, 0.1]} />
+            <meshStandardMaterial color="#d5d3cc" />
+         </mesh>
+      ))}
+
+      {/* Main Overhang/Sign Backing */}
+      <mesh position={[0, 5.5, 6.5]} castShadow receiveShadow>
+        <boxGeometry args={[16, 1.5, 1]} />
+        <meshStandardMaterial color="#1a202c" roughness={0.8} />
+      </mesh>
+      
+      {/* University Full Text */}
+      <Text position={[1.5, 5.5, 7.05]} fontSize={0.5} color="#fcfbf8" anchorX="center" anchorY="middle" maxWidth={12}>
+        Universidad Nacional de Villa Mercedes
+      </Text>
+      
+      {/* Big UNViMe Text on the Left Pillar */}
+      <Text position={[-6, 11, 6.5]} fontSize={1.4} color="#2a2f35" anchorX="center" anchorY="middle" outlineWidth={0.02} outlineColor="#2a2f35" fontWeight="bold">
+        UNViMe
+      </Text>
+
+      {/* Ground Floor Entrance */}
+      <mesh position={[0, 2.5, 6]}>
+        <boxGeometry args={[8, 5, 0.2]} />
+        <meshStandardMaterial color="#111" roughness={0.2} metalness={0.8} />
+      </mesh>
+
+      {/* Second Floor Windows */}
+      <mesh position={[0, 9, 6]}>
+        <boxGeometry args={[8, 4, 0.2]} />
+        <meshStandardMaterial color="#111" roughness={0.2} metalness={0.8} />
+      </mesh>
+
+      {/* Side Windows (Dark top half) */}
+      {[-24, -18, -12, 12, 18, 24].map((x) => (
+         <mesh key={`win_top_${x}`} position={[x, 9, 5.1]} castShadow>
+            <boxGeometry args={[3, 3, 0.2]} />
+            <meshStandardMaterial color="#111" roughness={0.2} metalness={0.8} />
+         </mesh>
+      ))}
+
+      {/* Lower windows / doors (White bottom half) */}
+      {[-24, -18, -12, 12, 24].map((x) => (
+         <mesh key={`win_low_${x}`} position={[x, 3, 5.1]} castShadow>
+            <boxGeometry args={[2, 4, 0.2]} />
+            <meshStandardMaterial color="#111" roughness={0.2} metalness={0.8} />
+         </mesh>
+      ))}
+
+      {/* White Corrugated Window Boxes on Right Side (like photo) */}
+      {[12, 18, 24].map((x) => (
+         <mesh key={`box_${x}`} position={[x, 6, 5.5]} castShadow>
+            <boxGeometry args={[3.5, 3, 1]} />
+            <meshStandardMaterial color="#e5e3dc" roughness={0.8} />
+         </mesh>
+      ))}
+      
+      {/* Balcony Base */}
+      <mesh position={[0, 5, 7.5]} castShadow>
+         <boxGeometry args={[16, 0.2, 3]} />
+         <meshStandardMaterial color="#333" />
+      </mesh>
+
+      {/* Simple Balcony Railing */}
+      <mesh position={[0, 7, 8.9]}>
+         <boxGeometry args={[16, 0.1, 0.1]} />
+         <meshStandardMaterial color="#111" />
+      </mesh>
+      <mesh position={[0, 6.5, 8.9]}>
+         <boxGeometry args={[16, 0.1, 0.1]} />
+         <meshStandardMaterial color="#111" />
+      </mesh>
+
+      {/* Right Side External Stairs leading UP and LEFT to balcony */}
+      <group position={[8, 0, 7.5]}>
+         {Array.from({length: 15}).map((_, i) => {
+            const fraction = i / 14;
+            const xOffset = fraction * 7; // bottom step is 7 units to the right
+            const yOffset = 5 - (fraction * 5); // bottom step is at y=0
+            return (
+               <mesh key={`stair_${i}`} position={[xOffset, yOffset, 0]} castShadow>
+                  <boxGeometry args={[0.6, 0.6, 2.5]} />
+                  <meshStandardMaterial color="#a3a098" />
+               </mesh>
+            );
+         })}
+      </group>
+      
+      {/* Flagpole */}
+      <mesh position={[-12, 6, 12]} castShadow>
+         <cylinderGeometry args={[0.05, 0.05, 12]} />
+         <meshStandardMaterial color="#ccc" metalness={0.8} />
+      </mesh>
+    </group>
+  );
+}
+
+function LowPolyTree({ position, scale = 1 }) {
+  return (
+    <group position={position} scale={[scale, scale, scale]} castShadow receiveShadow>
+      {/* Trunk */}
+      <mesh position={[0, 0.5, 0]} castShadow>
+        <cylinderGeometry args={[0.2, 0.3, 1, 5]} />
+        <meshStandardMaterial color="#8b7355" roughness={0.9} />
+      </mesh>
+      {/* Leaves */}
+      <mesh position={[0, 1.5, 0]} castShadow>
+        <coneGeometry args={[1.2, 1.8, 5]} />
+        <meshStandardMaterial color="#6b9b88" roughness={0.8} />
+      </mesh>
+      <mesh position={[0, 2.4, 0]} castShadow>
+        <coneGeometry args={[0.9, 1.5, 5]} />
+        <meshStandardMaterial color="#7bac99" roughness={0.8} />
+      </mesh>
+    </group>
+  );
+}
+
+function Cloud({ position, speed = 0.5, scale = 1 }) {
+  const ref = useRef();
+  useFrame((state, delta) => {
+    if (ref.current) {
+      ref.current.position.x += speed * delta;
+      if (ref.current.position.x > 35) ref.current.position.x = -35;
+    }
+  });
+
+  return (
+    <group ref={ref} position={position} scale={[scale, scale, scale]}>
+      <mesh castShadow position={[0, 0, 0]}>
+        <boxGeometry args={[4, 1.5, 2]} />
+        <meshStandardMaterial color="#fff" roughness={1} transparent opacity={0.9} />
+      </mesh>
+      <mesh castShadow position={[1.5, 0.5, 0.5]}>
+        <boxGeometry args={[2, 1.5, 2]} />
+        <meshStandardMaterial color="#fff" roughness={1} transparent opacity={0.9} />
+      </mesh>
+      <mesh castShadow position={[-1.5, 0.2, -0.5]}>
+        <boxGeometry args={[2.5, 1.2, 2.5]} />
+        <meshStandardMaterial color="#fff" roughness={1} transparent opacity={0.9} />
+      </mesh>
+    </group>
+  );
+}
+
+function Particles() {
+  const count = 50;
+  const meshRef = useRef();
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  
+  const particles = useMemo(() => {
+    return Array.from({ length: count }, () => ({
+      x: (Math.random() - 0.5) * 40,
+      y: Math.random() * 15,
+      z: (Math.random() - 0.5) * 40,
+      speed: 0.2 + Math.random() * 0.5,
+      phase: Math.random() * Math.PI * 2
+    }));
+  }, []);
+
+  useFrame((state) => {
+    if (!meshRef.current) return;
+    particles.forEach((p, i) => {
+      p.y += 0.01 * p.speed;
+      if (p.y > 15) p.y = 0;
+      
+      dummy.position.set(
+        p.x + Math.sin(state.clock.elapsedTime * p.speed + p.phase) * 0.5,
+        p.y,
+        p.z + Math.cos(state.clock.elapsedTime * p.speed + p.phase) * 0.5
+      );
+      dummy.rotation.set(
+        state.clock.elapsedTime * p.speed, 
+        state.clock.elapsedTime * p.speed, 
+        0
+      );
+      dummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, dummy.matrix);
+    });
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  });
+
+  return (
+    <instancedMesh ref={meshRef} args={[null, null, count]}>
+      <boxGeometry args={[0.15, 0.15, 0.15]} />
+      <meshBasicMaterial color="#6b9b88" transparent opacity={0.5} />
+    </instancedMesh>
+  );
+}
+
+function Scenery() {
+  return (
+    <group>
+      {/* Warehouse Building in background */}
+      <WarehouseBuilding />
+
+      {/* Trees */}
+      <LowPolyTree position={[-10, 0, -12]} scale={1.5} />
+      <LowPolyTree position={[12, 0, -8]} scale={2} />
+      <LowPolyTree position={[-14, 0, 8]} scale={1.2} />
+      <LowPolyTree position={[10, 0, 14]} scale={1.8} />
+      <LowPolyTree position={[-16, 0, 0]} scale={1.4} />
+      <LowPolyTree position={[16, 0, 2]} scale={1.1} />
+      
+      {/* Museum Benches */}
+      <mesh position={[-8, 0.25, 0]} castShadow receiveShadow>
+        <boxGeometry args={[3, 0.5, 1]} />
+        <meshStandardMaterial color="#d5d3cc" roughness={0.8} />
+      </mesh>
+      <mesh position={[8, 0.25, 8]} castShadow receiveShadow rotation={[0, Math.PI / 2, 0]}>
+        <boxGeometry args={[3, 0.5, 1]} />
+        <meshStandardMaterial color="#d5d3cc" roughness={0.8} />
+      </mesh>
+
+      {/* Floating Clouds */}
+      <Cloud position={[-20, 12, -5]} speed={0.8} scale={1.5} />
+      <Cloud position={[10, 15, -15]} speed={0.4} scale={2} />
+      <Cloud position={[-5, 10, 15]} speed={1.2} scale={1.2} />
+    </group>
+  );
+}
+
+// --- Characters ---
+
+function WalkingSprite({ url, scale = 1.5 }) {
+  const ref = useRef();
+  const groupRef = useRef();
+  
+  // State for random behavior logic
+  const stateRef = useRef({
+    pos: new THREE.Vector3((Math.random() - 0.5) * 20, 0, (Math.random() - 0.5) * 20),
+    target: new THREE.Vector3((Math.random() - 0.5) * 20, 0, (Math.random() - 0.5) * 20),
+    isWalking: true,
+    waitTime: 0,
+    speed: 2 + Math.random() * 2, // units per second
+    facingRight: true
+  });
+  
+  useFrame((state, delta) => {
+    if (!ref.current || !groupRef.current) return;
+    const s = stateRef.current;
+    
+    if (s.isWalking) {
+      // Move towards target
+      const dir = s.target.clone().sub(s.pos);
+      const dist = dir.length();
+      
+      if (dist < 0.1) {
+        // Reached target -> wait
+        s.isWalking = false;
+        s.waitTime = 1 + Math.random() * 4; // wait 1-5 seconds
+      } else {
+        dir.normalize();
+        // Move position
+        s.pos.add(dir.multiplyScalar(s.speed * delta));
+        
+        // Face movement direction
+        if (dir.x > 0) s.facingRight = true;
+        else if (dir.x < 0) s.facingRight = false;
+        
+        // Walk animation (bob and rotate)
+        ref.current.position.y = Math.abs(Math.sin(state.clock.elapsedTime * 15)) * 0.15 + (scale * 0.4);
+        ref.current.rotation.z = Math.sin(state.clock.elapsedTime * 15) * 0.05;
+      }
+    } else {
+      // Idle state
+      s.waitTime -= delta;
+      
+      // Idle animation (gentle breathe)
+      ref.current.position.y = Math.sin(state.clock.elapsedTime * 3) * 0.05 + (scale * 0.4);
+      ref.current.rotation.z = 0;
+      
+      if (s.waitTime <= 0) {
+        // Pick new random target within 30x30 area
+        s.isWalking = true;
+        s.target.set((Math.random() - 0.5) * 30, 0, (Math.random() - 0.5) * 30);
+        s.speed = 1.5 + Math.random() * 2.5; // New random speed
+      }
+    }
+    
+    // Apply position
+    groupRef.current.position.copy(s.pos);
+    
+    // Apply scale to flip sprite horizontally
+    ref.current.scale.x = s.facingRight ? scale : -scale;
+    ref.current.scale.y = scale;
+  });
+
+  return (
+    <group ref={groupRef}>
+      {/* Aligned parallel to the scene grid (Z axis facing) */}
+      <group ref={ref} rotation={[0, 0, 0]}>
+         <Image 
+           url={import.meta.env.BASE_URL + url} 
+           transparent 
+           scale={[1, 1]} // Scale handled by ref.current.scale in useFrame
+         />
+      </group>
+    </group>
+  );
+}
+
 function ProjectFrame({ project, index, activeId, setActiveId }) {
   const ref = useRef();
   const [hovered, setHover] = useState(false);
@@ -206,13 +540,32 @@ function SceneGroup({ projects, activeId, setActiveId }) {
         />
       ))}
       
-      {/* Low-Poly Floor */}
-      <mesh position={[0, -0.1, 0]} receiveShadow>
-        <boxGeometry args={[40, 0.2, 40]} />
+      {/* Background Sprites */}
+      <WalkingSprite url="dinoCharacter.png" scale={1.5} />
+      <WalkingSprite url="botdia.png" scale={1.8} />
+      
+      {/* Environment Props */}
+      <Scenery />
+      <Particles />
+      
+      {/* Grass Patch under projects */}
+      <mesh position={[0, -0.05, -2]} receiveShadow>
+        <boxGeometry args={[28, 0.1, 22]} />
+        <meshStandardMaterial color="#6b8c54" roughness={1} />
+        {/* Grass grid overlay */}
+        <mesh position={[0, 0.051, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+           <planeGeometry args={[28, 22, 14, 11]} />
+           <meshBasicMaterial color="#82a568" wireframe transparent opacity={0.6} />
+        </mesh>
+      </mesh>
+
+      {/* Main Low-Poly Floor */}
+      <mesh position={[0, -0.15, 0]} receiveShadow>
+        <boxGeometry args={[80, 0.1, 80]} />
         <meshStandardMaterial color="#f6f4ee" roughness={1} />
         {/* Floor grid */}
-        <mesh position={[0, 0.11, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-           <planeGeometry args={[40, 40, 20, 20]} />
+        <mesh position={[0, 0.051, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+           <planeGeometry args={[80, 80, 40, 40]} />
            <meshBasicMaterial color="#e5e3dc" wireframe transparent opacity={0.6} />
         </mesh>
       </mesh>
