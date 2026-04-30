@@ -1,0 +1,49 @@
+﻿
+// ─── PEEKING BOT ──────────────────────────────────────────────────────────────
+function PeekingBot() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const hobbySection = document.getElementById("hobby");
+      if (hobbySection) {
+        const rect = hobbySection.getBoundingClientRect();
+        // Visible when the hobby section is roughly in the middle of the screen
+        const isNear = rect.top < window.innerHeight * 0.7 && rect.bottom > window.innerHeight * 0.3;
+        setIsVisible(isNear);
+      }
+    };
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    // Initial check
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const resolve = (p) => { if (p.startsWith("http")) return p; const clean = p.startsWith("/public/") ? p.slice(8) : p.startsWith("/") ? p.slice(1) : p; return import.meta.env.BASE_URL + clean; };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        right: isVisible ? "-20px" : "-250px",
+        bottom: "15%",
+        transform: `rotate(${isVisible ? "-12deg" : "0deg"})`,
+        transformOrigin: "bottom right",
+        transition: "all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        zIndex: 100,
+        pointerEvents: "none",
+        width: "180px",
+        filter: "drop-shadow(-8px 12px 24px rgba(0,0,0,0.12))"
+      }}
+    >
+      <img 
+        src={resolve("/botdia.png")} 
+        alt="Bot asomándose" 
+        style={{ width: "100%", height: "auto" }} 
+      />
+    </div>
+  );
+}
+
+// ─── APP ──────────────────────────────────────────────────────────────────────
