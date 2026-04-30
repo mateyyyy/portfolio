@@ -19,6 +19,8 @@ html.lenis body {
 /* ─── BASE ──────────────────────────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 *,
@@ -36,6 +38,8 @@ body {
   background: #fcfbf8;
   color: #1a1814;
   position: relative;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body::before {
@@ -1999,4 +2003,10 @@ body.story-lock {
 @media (max-width: 640px) {
   .pgal-info { grid-template-columns: 1fr; gap: 16px; }
   .pgal-arrow { display: none; }
+}
+
+@media (max-width: 480px) {
+  .fab-text {
+    display: none;
+  }
 }

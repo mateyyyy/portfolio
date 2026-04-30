@@ -663,7 +663,7 @@ function ProjectFrame({ project, index, activeId, setActiveId }) {
         <Html position={[2, pedHeight + 2, 2]} center zIndexRange={[100, 0]}>
           <div 
             style={{
-              width: '380px',
+              width: 'min(85vw, 380px)',
               padding: '24px',
               background: 'rgba(252,251,248,0.85)',
               backdropFilter: 'blur(12px)',
@@ -743,7 +743,11 @@ function SceneGroup({ projects, activeId, setActiveId }) {
     groupRef.current.position.z = THREE.MathUtils.lerp(groupRef.current.position.z, tZ, 4 * delta);
 
     // Zoom camera using orthographic zoom
-    const tZoom = activeId !== null ? 90 : 40; // Decreased default zoom to show UNViMe text
+    const isMobile = window.innerWidth < 768;
+    const activeZoom = isMobile ? 60 : 90;
+    const idleZoom = isMobile ? 25 : 40;
+    const tZoom = activeId !== null ? activeZoom : idleZoom;
+    
     state.camera.zoom = THREE.MathUtils.lerp(state.camera.zoom, tZoom, 4 * delta);
     state.camera.updateProjectionMatrix();
   });
