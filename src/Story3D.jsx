@@ -15,6 +15,8 @@ import {
   Preload,
   Text3D,
   Center,
+  KeyboardControls,
+  useKeyboardControls,
 } from "@react-three/drei";
 import * as THREE from "three";
 
@@ -33,7 +35,52 @@ const positions = [
 
 // --- Environment Props ---
 
-function InstancedRibs({ count, getPosition, getRotation, getScale, args, color }) {
+function Stairs({ position = [0, 0, 0], rotation = [2, 0, 0] }) {
+  const steps = 12;
+  const stepHeight = 0.5;
+  const stepDepth = 0.6;
+
+  return (
+    <group position={position} rotation={rotation}>
+      {Array.from({ length: steps }).map((_, i) => (
+        <mesh
+          key={i}
+          position={[0, i * stepHeight, -i * stepDepth]}
+          castShadow
+          receiveShadow
+        >
+          <boxGeometry args={[3, stepHeight, stepDepth]} />
+          <meshStandardMaterial color="#c0beb6" roughness={0.9} />
+        </mesh>
+      ))}
+
+      
+    </group>
+  );
+}
+
+function Chair({ position, rotation = [0, 0, 0] }) {
+  return (
+    <group position={position} rotation={rotation}>
+      <mesh position={[0, 0.45, 0]} castShadow>
+        <boxGeometry args={[0.5, 0.05, 0.5]} />
+        <meshStandardMaterial color="#333" />
+      </mesh>
+      <mesh position={[0, 0.8, -0.22]} castShadow>
+        <boxGeometry args={[0.5, 0.6, 0.05]} />
+        <meshStandardMaterial color="#333" />
+      </mesh>
+      {[[-0.2, -0.2], [0.2, -0.2], [-0.2, 0.2], [0.2, 0.2]].map((p, i) => (
+        <mesh key={i} position={[p[0], 0.225, p[1]]} castShadow>
+          <cylinderGeometry args={[0.03, 0.03, 0.45]} />
+          <meshStandardMaterial color="#111" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function InstancedRibs({ count, getPosition, getRotation, getScale, args, color, opacity = 1 }) {
   const meshRef = useRef();
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
@@ -52,7 +99,7 @@ function InstancedRibs({ count, getPosition, getRotation, getScale, args, color 
   return (
     <instancedMesh ref={meshRef} args={[null, null, count]} castShadow receiveShadow>
       <boxGeometry args={args} />
-      <meshStandardMaterial color={color} roughness={0.9} />
+      <meshStandardMaterial color={color} roughness={0.9} transparent opacity={opacity} />
     </instancedMesh>
   );
 }
@@ -72,39 +119,30 @@ function RoundTable({ position }) {
         <cylinderGeometry args={[0.6, 0.6, 0.1, 16]} />
         <meshStandardMaterial color="#333" />
       </mesh>
-      {[0, 1, 2, 3].map((i) => {
-        const angle = (i * Math.PI) / 2;
-        return (
-          <mesh
-            key={i}
-            position={[Math.cos(angle) * 1.2, 0.4, Math.sin(angle) * 1.2]}
-            castShadow
-            receiveShadow
-          >
-            <cylinderGeometry args={[0.3, 0.3, 0.8, 12]} />
-            <meshStandardMaterial color="#555" />
-          </mesh>
-        );
-      })}
+      
     </group>
   );
 }
 
-function WarehouseBuilding() {
+function WarehouseBuilding({ playerPos }) {
+  const isInside = playerPos && playerPos.z < 6 && playerPos.x > -25 && playerPos.x < 50;
+  const wallOpacity = isInside ? 0.2 : 1;
+  const roofOpacity = isInside ? 0.1 : 1;
+
   return (
     <group position={[0, 0, -16]} scale={[0.55, 0.55, 0.55]}>
       <group>
         <mesh position={[11, 3, -34.75]} castShadow receiveShadow>
           <boxGeometry args={[70, 6, 0.5]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} />
+          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} />
         </mesh>
         <mesh position={[-23.75, 3, -15]} castShadow receiveShadow>
           <boxGeometry args={[0.5, 6, 40]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} />
+          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} />
         </mesh>
         <mesh position={[45.75, 3, -15]} castShadow receiveShadow>
           <boxGeometry args={[0.5, 6, 40]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} />
+          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} />
         </mesh>
         <mesh position={[11, 0.1, -15]} receiveShadow>
           <boxGeometry args={[69, 0.2, 39]} />
@@ -112,11 +150,11 @@ function WarehouseBuilding() {
         </mesh>
         <mesh position={[11, 0.25, 4.75]} castShadow receiveShadow>
           <boxGeometry args={[70, 0.5, 0.5]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} />
+          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} />
         </mesh>
         <mesh position={[11, 5.25, 4.75]} castShadow receiveShadow>
           <boxGeometry args={[70, 1.5, 0.5]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} />
+          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} />
         </mesh>
         {[
           { x: -20.75, width: 6.5 },
@@ -133,21 +171,26 @@ function WarehouseBuilding() {
             receiveShadow
           >
             <boxGeometry args={[p.width, 4, 0.5]} />
-            <meshStandardMaterial color="#f0efe9" roughness={0.9} />
+            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} />
           </mesh>
         ))}
         <RoundTable position={[-16, 0.2, 0]} />
         <RoundTable position={[-16, 0.2, -6]} />
         <RoundTable position={[14, 0.2, 0]} />
-        <RoundTable position={[14, 0.2, -6]} />
-        <RoundTable position={[21, 0.2, -3]} />
-        <RoundTable position={[28, 0.2, 0]} />
-        <RoundTable position={[28, 0.2, -7]} />
+        <RoundTable position={[14, 0.2, 3.2]} />
+        <RoundTable position={[21, 0.2, 3.2]} />
+        <RoundTable position={[28, 0.2, 3.2]} />
+        
+        {/* Interior Chairs */}
+        <Chair position={[26, 0, 3.5]} rotation={[0, 90, 0]} />
+        <Chair position={[19, 0, 3.5]} rotation={[0, 90, 0]} />
+        <Chair position={[28, 0.2, 0]} rotation={[0, Math.PI, 0]} />
+        <Stairs position={[-18, 0, 2.5]} rotation={[0, -Math.PI/2, 0]} />
       </group>
 
       <mesh position={[11, 9, -15]} castShadow receiveShadow>
         <boxGeometry args={[70, 6, 40]} />
-        <meshStandardMaterial color="#2a2f35" roughness={0.9} />
+        <meshStandardMaterial color="#2a2f35" roughness={0.9} transparent opacity={roofOpacity} />
       </mesh>
 
       <mesh
@@ -158,13 +201,14 @@ function WarehouseBuilding() {
         receiveShadow
       >
         <cylinderGeometry args={[1, 1, 40, 3]} />
-        <meshStandardMaterial color="#2a2f35" roughness={0.9} flatShading />
+        <meshStandardMaterial color="#2a2f35" roughness={0.9} flatShading transparent opacity={roofOpacity} />
       </mesh>
 
       <InstancedRibs
         count={101}
         args={[35, 0.05, 0.12]}
         color="#1a2026"
+        opacity={roofOpacity}
         getPosition={(i) => [11 - 17.5, 14.6 - 0.6, -35 + i * 0.4]}
         getRotation={() => [0, 0, 0.11]}
       />
@@ -172,6 +216,7 @@ function WarehouseBuilding() {
         count={101}
         args={[35, 0.05, 0.12]}
         color="#1a2026"
+        opacity={roofOpacity}
         getPosition={(i) => [11 + 17.5, 14.6 - 0.6, -35 + i * 0.4]}
         getRotation={() => [0, 0, -0.11]}
       />
@@ -196,7 +241,7 @@ function WarehouseBuilding() {
             roughness={0.1}
             metalness={0.3}
             transparent
-            opacity={0.4}
+            opacity={0.1}
           />
         </mesh>
       </group>
@@ -222,7 +267,7 @@ function WarehouseBuilding() {
               roughness={0.1}
               metalness={0.3}
               transparent
-              opacity={0.4}
+              opacity={0.1}
             />
           </mesh>
         </group>
@@ -797,10 +842,10 @@ function BicycleRack({ position, rotation = [0, 0, 0] }) {
   );
 }
 
-function Scenery() {
+function Scenery({ playerPos }) {
   return (
     <group>
-      <WarehouseBuilding />
+      <WarehouseBuilding playerPos={playerPos} />
       <ArgentineFlag position={[-12, 0, 4]} />
       <FenceSegment position={[-8, 0, 9]} length={12} />
       <FenceSegment position={[51, 0, 9]} length={98} />
@@ -825,7 +870,7 @@ function Scenery() {
         position={[0, 0.1, 11.6-2.6]}
       />  
       <ConcretePaths
-        key={12}
+        key={13}
         boxArgs={[4.3, 0.02, 1.8]}
         position={[0, 0.1, -12.1]}
       />  
@@ -911,6 +956,53 @@ function WalkingSprite({ url, scale = 1.5 }) {
     <group ref={groupRef}>
       <group ref={ref} rotation={[0, 0, 0]}>
         <Image key={imgUrl} url={imgUrl} transparent scale={[1, 1]} />
+      </group>
+    </group>
+  );
+}
+
+function PlayerDino({ url, scale = 1.5, onPositionUpdate }) {
+  const ref = useRef();
+  const groupRef = useRef();
+  const [, getKeys] = useKeyboardControls();
+  const pos = useMemo(() => new THREE.Vector3(0, 0, 15), []);
+  const velocity = useMemo(() => new THREE.Vector3(), []);
+  const speed = 10;
+
+  useFrame((state, delta) => {
+    if (!ref.current || !groupRef.current) return;
+    const { forward, backward, left, right } = getKeys();
+
+    velocity.set(0, 0, 0);
+    if (forward) velocity.z -= 1;
+    if (backward) velocity.z += 1;
+    if (left) velocity.x -= 1;
+    if (right) velocity.x += 1;
+
+    if (velocity.length() > 0) {
+      velocity.normalize().multiplyScalar(speed * delta);
+      pos.add(velocity);
+      if (velocity.x > 0) ref.current.scale.x = scale;
+      else if (velocity.x < 0) ref.current.scale.x = -scale;
+
+      const time = state.clock.getElapsedTime();
+      ref.current.position.y = Math.abs(Math.sin(time * 15)) * 0.15 + scale * 0.4;
+      ref.current.rotation.z = Math.sin(time * 15) * 0.05;
+    } else {
+      const time = state.clock.getElapsedTime();
+      ref.current.position.y = Math.sin(time * 3) * 0.05 + scale * 0.4;
+      ref.current.rotation.z = 0;
+    }
+
+    groupRef.current.position.copy(pos);
+    onPositionUpdate?.(pos);
+    invalidate();
+  });
+
+  return (
+    <group ref={groupRef}>
+      <group ref={ref}>
+        <Image url={import.meta.env.BASE_URL + url} transparent scale={[1, 1]} />
       </group>
     </group>
   );
@@ -1186,6 +1278,7 @@ const ProjectFrame = React.memo(function ProjectFrame({
 
 function SceneGroup({ projects, activeId, setActiveId }) {
   const groupRef = useRef();
+  const [playerPos, setPlayerPos] = useState(new THREE.Vector3(0, 0, 15));
 
   useFrame((state, delta) => {
     let tX = 0,
@@ -1197,9 +1290,13 @@ function SceneGroup({ projects, activeId, setActiveId }) {
       tY = -(0.5 + (activeId % 3) * 0.8) + 1;
     }
     const isMobile = window.innerWidth < 768;
-    if (activeId === null && !isMobile) {
-      tX += state.pointer.x * 2;
-      tZ += state.pointer.y * 2;
+    if (activeId === null) {
+      tX = 0;
+      tZ = 8;
+      if (!isMobile) {
+        tX += state.pointer.x * 2;
+        tZ += state.pointer.y * 2;
+      }
     }
 
     const px = groupRef.current.position.x;
@@ -1227,9 +1324,9 @@ function SceneGroup({ projects, activeId, setActiveId }) {
           setActiveId={setActiveId}
         />
       ))}
-      <WalkingSprite url="dinoCharacter.png" scale={1.5} />
+      <PlayerDino url="dinoCharacter.png" scale={1.5} onPositionUpdate={setPlayerPos} />
       <WalkingSprite url="botdia.png" scale={1.8} />
-      <Scenery />
+      <Scenery playerPos={playerPos} />
       <Particles />
 
       <mesh position={[43, -0.05, -2]} receiveShadow>
@@ -1276,102 +1373,111 @@ export default function Story3D({ projects, active, onClose }) {
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 60,
-        background: "#fdfbf2",
-        overflow: "hidden",
-      }}
+    <KeyboardControls
+      map={[
+        { name: "forward", keys: ["ArrowUp", "KeyW"] },
+        { name: "backward", keys: ["ArrowDown", "KeyS"] },
+        { name: "left", keys: ["ArrowLeft", "KeyA"] },
+        { name: "right", keys: ["ArrowRight", "KeyD"] },
+      ]}
     >
-      {/* Close */}
-      <button
-        onClick={onClose}
-        style={{
-          position: "absolute",
-          top: "clamp(16px,4vw,32px)",
-          right: "clamp(16px,4vw,32px)",
-          zIndex: 70,
-          background: "rgba(0,0,0,0.05)",
-          border: "none",
-          width: 48,
-          height: 48,
-          borderRadius: "50%",
-          color: "#1a1814",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backdropFilter: "blur(8px)",
-        }}
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-
-      {/* Hint */}
       <div
         style={{
-          position: "absolute",
-          bottom: "clamp(16px,4vw,32px)",
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 70,
-          color: "rgba(26,24,20,0.5)",
-          fontSize: 11,
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-          pointerEvents: "none",
-          width: "90%",
-          textAlign: "center",
+          position: "fixed",
+          inset: 0,
+          zIndex: 60,
+          background: "#fdfbf2",
+          overflow: "hidden",
         }}
       >
-        {activeId === null
-          ? "Vista Isométrica · Click en un bloque para explorar"
-          : "Click fuera o en cerrar para volver"}
+        {/* Close */}
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: "clamp(16px,4vw,32px)",
+            right: "clamp(16px,4vw,32px)",
+            zIndex: 70,
+            background: "rgba(0,0,0,0.05)",
+            border: "none",
+            width: 48,
+            height: 48,
+            borderRadius: "50%",
+            color: "#1a1814",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        {/* Hint */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "clamp(16px,4vw,32px)",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 70,
+            color: "rgba(26,24,20,0.5)",
+            fontSize: 11,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            pointerEvents: "none",
+            width: "90%",
+            textAlign: "center",
+          }}
+        >
+          {activeId === null
+            ? "Mover Dino: WASD / Flechas · Click en bloque para explorar"
+            : "Click fuera o en cerrar para volver"}
+        </div>
+
+        {/* ── Canvas: frameloop="demand" → only renders when invalidate() called ── */}
+        <Canvas
+          shadows={{ type: THREE.PCFShadowMap }}
+          orthographic
+          frameloop="demand"
+          camera={{ position: [15, 15, 20], zoom: 50, near: -100, far: 100 }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setActiveId(null);
+          }}
+          gl={{ antialias: true, maxTextureSize: 2048 }}
+        >
+          <color attach="background" args={["#fdfbf2"]} />
+          <fog attach="fog" args={["#fdfbf2", 30, 90]} />
+          <ambientLight intensity={1.1} color="#ffffff" />
+          <directionalLight
+            position={[15, 25, 10]}
+            intensity={1.8}
+            color="#fffaf0"
+            castShadow
+            shadow-mapSize={[256, 256]}
+            shadow-bias={-0.0001}
+          />
+
+          <CameraController activeId={activeId} />
+          <SceneGroup
+            projects={projects}
+            activeId={activeId}
+            setActiveId={handleSetActiveId}
+          />
+          <Preload all />
+        </Canvas>
       </div>
-
-      {/* ── Canvas: frameloop="demand" → only renders when invalidate() called ── */}
-      <Canvas
-        shadows={{ type: THREE.PCFShadowMap }}
-        orthographic
-        frameloop="demand"
-        camera={{ position: [20, 20, 20], zoom: 50, near: -100, far: 100 }}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) setActiveId(null);
-        }}
-        gl={{ antialias: true, maxTextureSize: 2048 }}
-      >
-        <color attach="background" args={["#fdfbf2"]} />
-        <fog attach="fog" args={["#fdfbf2", 30, 90]} />
-        <ambientLight intensity={1.1} color="#ffffff" />
-        <directionalLight
-          position={[15, 25, 10]}
-          intensity={1.8}
-          color="#fffaf0"
-          castShadow
-          shadow-mapSize={[256, 256]}
-          shadow-bias={-0.0001}
-        />
-
-        <CameraController activeId={activeId} />
-        <SceneGroup
-          projects={projects}
-          activeId={activeId}
-          setActiveId={handleSetActiveId}
-        />
-        <Preload all />
-      </Canvas>
-    </div>
+    </KeyboardControls>
   );
 }
