@@ -1,7 +1,15 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  lazy,
+  Suspense,
+} from "react";
 import Lenis from "lenis";
 import { GitHubCalendar } from "react-github-calendar";
-import Story3D from "./Story3D";
+
+const Story3D = lazy(() => import("./Story3D"));
 
 // ─── CUSTOM CURSOR ────────────────────────────────────────────────────────────
 function CustomCursor() {
@@ -1056,22 +1064,24 @@ function ProjectRow({ project, index, onOpenMedia }) {
 // ─── LANDING CARD ─────────────────────────────────────────────────────────────
 function LandingCard({ project, onOpenMedia }) {
   return (
-    <article className="landing-card" onClick={(e) => {
+    <article
+      className="landing-card"
+      onClick={(e) => {
         // Find the "Ver sitio" link and click it, or just do nothing on the wrapper
-      }}>
+      }}
+    >
       <div className="landing-card-media">
-        <ProjectImageSlider images={project.images} onOpenGallery={onOpenMedia} />
+        <ProjectImageSlider
+          images={project.images}
+          onOpenGallery={onOpenMedia}
+        />
       </div>
       <div className="landing-card-body">
         <div className="landing-card-header">
-          <h3 className="landing-card-name">
-            {project.name}
-          </h3>
+          <h3 className="landing-card-name">{project.name}</h3>
           <span className="tag-pill">{project.tag}</span>
         </div>
-        <p className="landing-card-desc">
-          {project.description}
-        </p>
+        <p className="landing-card-desc">{project.description}</p>
         <a
           href={project.url}
           target="_blank"
@@ -1585,10 +1595,21 @@ function HeroBoot({ onStartStory }) {
           onClick={() => {
             onStartStory?.();
           }}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          style={{ display: "flex", alignItems: "center", gap: "8px" }}
         >
           Explorar en 3D
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
         </button>
       </div>
     </section>
@@ -1791,7 +1812,7 @@ function App() {
                   </div>
                 </div>
               </div>
-              
+
               <div
                 className="reveal reveal-delay-2"
                 style={{
@@ -2032,43 +2053,60 @@ function App() {
 
       <MediaModal mediaModal={mediaModal} setMediaModal={setMediaModal} />
       <PeekingBot />
-      
+
       {!storyActive && (
-        <button 
+        <button
           className="fab-3d-btn"
           onClick={() => setStoryActive(true)}
           style={{
-            position: 'fixed',
-            bottom: 'clamp(16px, 4vw, 32px)',
-            right: 'clamp(16px, 4vw, 32px)',
+            position: "fixed",
+            bottom: "clamp(16px, 4vw, 32px)",
+            right: "clamp(16px, 4vw, 32px)",
             zIndex: 50,
-            background: 'var(--ink-main, #1a1814)',
-            color: 'var(--bg-main, #fcfbf8)',
-            border: 'none',
-            borderRadius: '30px',
-            padding: 'clamp(12px, 3vw, 16px) clamp(16px, 4vw, 24px)',
-            fontFamily: 'var(--font-sans)',
-            fontSize: '14px',
+            background: "var(--ink-main, #1a1814)",
+            color: "var(--bg-main, #fcfbf8)",
+            border: "none",
+            borderRadius: "30px",
+            padding: "clamp(12px, 3vw, 16px) clamp(16px, 4vw, 24px)",
+            fontFamily: "var(--font-sans)",
+            fontSize: "14px",
             fontWeight: 500,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            cursor: 'pointer',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-            transition: 'transform 0.2s ease, opacity 0.2s ease'
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            cursor: "pointer",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+            transition: "transform 0.2s ease, opacity 0.2s ease",
           }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.transform = "scale(1.05)")
+          }
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
           <span className="fab-text">Ver 3D</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
         </button>
       )}
-      <Story3D
-        projects={storyTimeline}
-        active={storyActive}
-        onClose={() => setStoryActive(false)}
-      />
+      <Suspense fallback={null}>
+        {storyActive && (
+          <Story3D
+            projects={storyTimeline}
+            active={storyActive}
+            onClose={() => setStoryActive(false)}
+          />
+        )}
+      </Suspense>
     </>
   );
 }
