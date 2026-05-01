@@ -556,8 +556,8 @@ function WarehouseBuilding({ playerPos }) {
           {/* Pared con Ventana Grande */}
           <group position={[0, 0, 17.5]}>
             {/* Parte inferior sólida */}
-            <mesh position={[0, -2.25, 0]}>
-              <boxGeometry args={[0.2, 1.5, 10]} />
+            <mesh position={[-0.5, -2.25, 0]}>
+              <boxGeometry args={[0.8, 1.5, 10]} />
               <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
             </mesh>
             {/* Parte superior sólida */}
@@ -583,7 +583,7 @@ function WarehouseBuilding({ playerPos }) {
           </mesh>
           
           {/* Puertas (2 unidades) */}
-          {[-15,-7, 1, 8].map((z, i) => (
+          {[-16,-8, 0, 8].map((z, i) => (
             <group key={`office_door_${i}`} position={[0.1, -1.75, z]}>
               {/* Marco/Puerta madera */}
               <mesh>
