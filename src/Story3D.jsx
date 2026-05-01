@@ -229,8 +229,8 @@ function WarehouseBuilding({ playerPos }) {
   const interiorOpacity = isInside ? 1 : 0;
 
   // Stable functions for InstancedRibs
-  const getRoofRibPosLeft = useMemo(() => (i) => [11 - 17.5, 14.6 - 0.58, -35 + i * 0.4], []);
-  const getRoofRibPosRight = useMemo(() => (i) => [11 + 17.5, 14.6 - 0.58, -35 + i * 0.4], []);
+  const getRoofRibPosLeft = useMemo(() => (i) => [11 - 17.5, 14.6 - 0.58, -54.25 + i * 0.4], []);
+  const getRoofRibPosRight = useMemo(() => (i) => [11 + 17.5, 14.6 - 0.58, -54.25 + i * 0.4], []);
   
   const getColRibPos = useMemo(() => (i) => {
     const xPos = -7.875 + i * 0.25;
@@ -588,31 +588,31 @@ function WarehouseBuilding({ playerPos }) {
         </group>
       </group>
 
-      <mesh position={[11, 9, -15]} visible={!isInside}>
-        <boxGeometry args={[70.5, 6, 40]} />
+      <mesh position={[11, 9, -25]} visible={!isInside}>
+        <boxGeometry args={[70.5, 6, 60]} />
         <meshStandardMaterial color="#2a2f35" roughness={0.9} />
       </mesh>
 
       <mesh
-        position={[11, 13.1667, -15]}
+        position={[11, 13.1667, -25]}
         rotation={[-Math.PI / 2, 0, 0]}
         scale={[40.7, 1, 2.3333]}
         visible={!isInside}
       >
-        <cylinderGeometry args={[1, 1, 40, 3]} />
+        <cylinderGeometry args={[1, 1, 60, 3]} />
         <meshStandardMaterial color="#2a2f35" roughness={0.9} flatShading />
       </mesh>
 
       <group visible={!isInside}>
         <InstancedRibs
-          count={101}
+          count={149}
           args={[35, 0.05, 0.12]}
           color="#1a2026"
           getPosition={getRoofRibPosLeft}
           getRotation={() => [0, 0, 0.11]}
         />
         <InstancedRibs
-          count={101}
+          count={149}
           args={[35, 0.05, 0.12]}
           color="#1a2026"
           getPosition={getRoofRibPosRight}
@@ -681,7 +681,7 @@ function WarehouseBuilding({ playerPos }) {
 
       {/* Entrada despejada con dos puertas de vidrio */}
       {[-2, 2].map((x, i) => (
-        <group key={`entrance_door_${i}`} position={[x, 3, 5]}>
+        <group key={`entrance_door_${i}`} position={[x, 3, 5]} visible={!isInside}>
           {/* Vidrio */}
           <mesh>
             <boxGeometry args={[3.8, 6, 0.1]} />
@@ -706,9 +706,10 @@ function WarehouseBuilding({ playerPos }) {
         color="#c0beb6"
         getPosition={getColRibPos}
         getScale={getColRibScale}
+        opacity={!isInside ? 1 : 0}
       />
 
-      <mesh position={[-0.125, 6, 8.25]}>
+      <mesh position={[-0.125, 6, 8.25]} visible={!isInside}>
         <boxGeometry args={[7.75, 1.5, 0.5]} />
         <meshStandardMaterial color="#1a202c" roughness={0.8} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
       </mesh>
@@ -721,11 +722,12 @@ function WarehouseBuilding({ playerPos }) {
         anchorY="middle"
         maxWidth={7.5}
         textAlign="center"
+        visible={!isInside}
       >
         Universidad Nacional de Villa Mercedes
       </Text>
 
-      <group position={[-6, 11, 8.8]}>
+      <group position={[-6, 11, 8.8]} visible={!isInside}>
         <Center>
           <Text3D
             font="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json"
@@ -752,20 +754,20 @@ function WarehouseBuilding({ playerPos }) {
 
       {/* Puertas de entrada eliminadas por pedido - bloque solido removido */}
 
-      <mesh position={[-0.125, 6.75, 6.75]} castShadow>
+      <mesh position={[-0.125, 6.75, 6.75]} castShadow visible={!isInside}>
         <boxGeometry args={[7.75, 0.2, 3.5]} />
         <meshStandardMaterial color="#333" />
       </mesh>
-      <mesh position={[-0.125, 7.75, 8.4]}>
+      <mesh position={[-0.125, 7.75, 8.4]} visible={!isInside}>
         <boxGeometry args={[7.75, 0.1, 0.1]} />
         <meshStandardMaterial color="#111" />
       </mesh>
-      <mesh position={[-0.125, 7.25, 8.4]}>
+      <mesh position={[-0.125, 7.25, 8.4]} visible={!isInside}>
         <boxGeometry args={[7.75, 0.1, 0.1]} />
         <meshStandardMaterial color="#111" />
       </mesh>
 
-      <group position={[4.2, 0, 6.5]}>
+      <group position={[4.2, 0, 6.5]} visible={!isInside}>
         {Array.from({ length: 15 }).map((_, i) => {
           const fraction = i / 14;
           const xOffset = fraction * 7;
@@ -1083,7 +1085,7 @@ function SidewalkAndStreet() {
         color="#6b8c54"
         roughness={1}
         y={0.05}
-        innerX={-14}
+        innerX={-18}
         innerZ={9}
         width={3}
         extX={extX}
@@ -1093,7 +1095,7 @@ function SidewalkAndStreet() {
         color="#d5d3cc"
         roughness={0.9}
         y={0.06}
-        innerX={-17}
+        innerX={-21}
         innerZ={12}
         width={2}
         extX={extX}
@@ -1104,7 +1106,7 @@ function SidewalkAndStreet() {
         color="#8b7355"
         roughness={1}
         y={0.04}
-        innerX={-19}
+        innerX={-23}
         innerZ={14}
         width={2}
         extX={extX}
@@ -1114,7 +1116,7 @@ function SidewalkAndStreet() {
         color="#3a3c3f"
         roughness={0.8}
         y={0.02}
-        innerX={-21}
+        innerX={-25}
         innerZ={16}
         width={10}
         extX={extX}
@@ -1212,16 +1214,16 @@ function Scenery({ playerPos }) {
   return (
     <group>
       <WarehouseBuilding playerPos={playerPos} />
-      <ArgentineFlag position={[-11, 0, 4]} rotation={[0, 1, 0]}/>
-      <FenceSegment position={[-7.1, 0, 9]} length={10} />
+      <ArgentineFlag position={[-15, 0, 4]} rotation={[0, 1, 0]}/>
+      <FenceSegment position={[-8.6, 0, 9]} length={15} />
       <FenceSegment position={[51, 0, 9]} length={98} />
       <FenceSegment
-        position={[-15, 0, -6.5]}
+        position={[-19, 0, -6.5]}
         rotation={[0, Math.PI / 2, 0]}
         length={25}
       />
       <FenceSegment
-        position={[-13.5, 0, 7.5]}
+        position={[-17.5, 0, 7.5]}
         rotation={[0, -0.785398, 0]}
         length={3.5}
       />
@@ -1252,8 +1254,8 @@ function Scenery({ playerPos }) {
       />
       <ConcretePaths
         key="path_14"
-        boxArgs={[20, 0.02, 1.8]}
-        position={[-3, 0.1, -9.35]}
+        boxArgs={[25, 0.02, 1.8]}
+        position={[-5, 0.1, -9.35]}
       />
       <ConcretePaths
         key="path_16"
@@ -1262,8 +1264,8 @@ function Scenery({ playerPos }) {
       />  
       <ConcretePaths
         key="path_17"
-        boxArgs={[2, 0.02, 10]}
-        position={[-12.9, 0.1, -13.45]}
+        boxArgs={[2, 0.02, 15]}
+        position={[-16.9, 0.1, -15.97]}
       />  
       <ConcretePaths
         key="path_18"
@@ -1378,12 +1380,6 @@ function PlayerDino({ url, scale = 1.5, onPositionUpdate, teleportPos }) {
     if (left) velocity.x -= 1;
     if (right) velocity.x += 1;
 
-    // Rotate velocity relative to view rotation
-    if (velocity.length() > 0 && window.storyViewRotation) {
-      const angle = (window.storyViewRotation * Math.PI) / -180;
-      velocity.applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
-    }
-
     // Teletransporte
     if (teleportPos) {
       pos.copy(teleportPos);
@@ -1393,7 +1389,10 @@ function PlayerDino({ url, scale = 1.5, onPositionUpdate, teleportPos }) {
       velocity.normalize().multiplyScalar(speed * delta);
       pos.add(velocity);
 
-      ref.current.scale.x = velocity.x < 0 ? -scale : scale;
+      // Look at move direction (left/right)
+      if (Math.abs(velocity.x) > 0.1) {
+        ref.current.scale.x = velocity.x < 0 ? -scale : scale;
+      }
       const time = state.clock.getElapsedTime();
       ref.current.position.y = Math.abs(Math.sin(time * 15)) * 0.15 + scale * 0.4;
       ref.current.rotation.z = Math.sin(time * 15) * 0.05;
@@ -1433,7 +1432,7 @@ function PlayerDino({ url, scale = 1.5, onPositionUpdate, teleportPos }) {
 
   return (
     <group ref={groupRef}>
-      <group ref={ref}>
+      <group ref={ref} rotation={[0, 0, 0]}>
         <Image url={import.meta.env.BASE_URL + url} transparent scale={[1, 1]} />
       </group>
     </group>
@@ -1726,22 +1725,8 @@ function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosC
       tX = -playerPos.x;
       tZ = -playerPos.z + 5;
       tY = -playerPos.y; // Seguir altura del dino
-      
-      // Rotate follow target to match view rotation
-      if (window.storyViewRotation) {
-        const angle = (window.storyViewRotation * Math.PI) / 180;
-        const s = Math.sin(angle);
-        const c = Math.cos(angle);
-        const nx = tX * c - tZ * s;
-        const nz = tX * s + tZ * c;
-        tX = nx;
-        tZ = nz;
-      }
 
-      if (!isMobile) {
-        tX += state.pointer.x * 2;
-        tZ += state.pointer.y * 2;
-      }
+      // Mouse effect removed as requested
     }
 
     const px = groupRef.current.position.x;
@@ -1751,8 +1736,8 @@ function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosC
     groupRef.current.position.y = THREE.MathUtils.lerp(py, tY, 4 * delta);
     groupRef.current.position.z = THREE.MathUtils.lerp(pz, tZ, 4 * delta);
 
-    // Smoothly rotate the group - SIN rotacion interior, solo viewRotation
-    const baseRot = (window.storyViewRotation * Math.PI) / 180;
+    // Smoothly rotate the group - Fixed perspective
+    const baseRot = 0;
     groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, baseRot, 5 * delta);
 
     const moved =
@@ -1804,13 +1789,19 @@ function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosC
       
       <Particles />
 
-      <mesh position={[43, -0.05, -2]} receiveShadow>
-        <boxGeometry args={[114, 0.1, 22]} />
+      <mesh position={[41, -0.05, -2]} receiveShadow>
+        <boxGeometry args={[118, 0.1, 22]} />
         <meshStandardMaterial color="#6b8c54" roughness={1} />
       </mesh>
 
       <mesh position={[45, -0.05, -28]} receiveShadow>
         <boxGeometry args={[70, 0.1, 30]} />
+        <meshStandardMaterial color="#6b8c54" roughness={1} />
+      </mesh>
+
+      {/* Relleno de pasto lateral izquierdo */}
+      <mesh position={[-16, -0.05, -15]} receiveShadow>
+        <boxGeometry args={[5, 0.1, 50]} />
         <meshStandardMaterial color="#6b8c54" roughness={1} />
       </mesh>
 
@@ -1893,17 +1884,18 @@ export default function Story3D({ projects, active, onClose }) {
             top: "clamp(16px,4vw,32px)",
             right: "clamp(16px,4vw,32px)",
             zIndex: 70,
-            background: "rgba(0,0,0,0.05)",
+            background: "rgba(26,24,20,0.85)", // Mas oscuro para contraste
             border: "none",
             width: 48,
             height: 48,
             borderRadius: "50%",
-            color: "#1a1814",
+            color: "#ffffff", // X blanca
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             backdropFilter: "blur(8px)",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
           }}
         >
           <svg
@@ -1920,40 +1912,15 @@ export default function Story3D({ projects, active, onClose }) {
         </button>
 
         {/* Rotate Camera */}
-        <button
-          onClick={() => setViewRotation(r => (r + 90) % 360)}
-          style={{
-            position: "absolute",
-            top: "clamp(16px,4vw,32px)",
-            right: "clamp(80px,10vw,100px)",
-            zIndex: 70,
-            background: "rgba(0,0,0,0.05)",
-            border: "none",
-            width: 48,
-            height: 48,
-            borderRadius: "50%",
-            color: "#1a1814",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backdropFilter: "blur(8px)",
-          }}
-          title="Rotar Vista"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M23 4v6h-6" />
-            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-          </svg>
-        </button>
+        {/* Botón rotación removido por bugs */}
 
-        {/* Botones de Navegación Interior - Siempre visibles para edición */}
+        {/* Botones de Navegación Interior - Solo visibles cuando el dino está adentro */}
         <div style={{
             position: "absolute",
             bottom: "clamp(80px, 12vw, 100px)",
             right: "clamp(16px, 4vw, 32px)",
             zIndex: 70,
-            display: "flex",
+            display: isInside ? "flex" : "none",
             flexDirection: "column",
             gap: "10px"
           }}>
