@@ -35,6 +35,62 @@ const positions = [
 
 // --- Environment Props ---
 
+function LandingSteps({ position }) {
+  return (
+    <group position={position}>
+      <mesh position={[0.3, 0.1, 0.2]}>
+        <boxGeometry args={[1.9, 0.2, 1.9]} />
+        <meshStandardMaterial color="#c0beb6" roughness={0.9} />
+      </mesh>
+      <mesh position={[0.2, 0.3, 0.1]}>
+        <boxGeometry args={[1.7, 0.2, 1.7]} />
+        <meshStandardMaterial color="#c0beb6" roughness={0.9} />
+      </mesh>
+      <mesh position={[0.1, 0.5, 0]}>
+        <boxGeometry args={[1.5, 0.2, 1.5]} />
+        <meshStandardMaterial color="#c0beb6" roughness={0.9} />
+      </mesh>
+    </group>
+  );
+}
+
+function InfoSign({ position, title, content }) {
+  const [active, setActive] = useState(false);
+  return (
+    <group position={position} onClick={(e) => { e.stopPropagation(); setActive(!active); }}>
+      <mesh position={[0, 0.75, 0]}>
+        <boxGeometry args={[0.1, 1.5, 0.1]} />
+        <meshStandardMaterial color="#444" />
+      </mesh>
+      <mesh position={[0, 1.5, 0]}>
+        <boxGeometry args={[1.2, 0.8, 0.1]} />
+        <meshStandardMaterial color="#8b7355" />
+      </mesh>
+      <Text position={[0, 1.5, 0.06]} fontSize={0.12} color="#fff" anchorX="center" anchorY="middle">
+        {title}
+      </Text>
+      {active && (
+        <Html position={[0, 2.2, 0]} center zIndexRange={[100, 0]}>
+          <div style={{
+            background: "#fdfbf2",
+            padding: "15px",
+            borderRadius: "8px",
+            border: "2px solid #8b7355",
+            width: "220px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+            color: "#1a1814",
+            pointerEvents: "auto"
+          }}>
+            <h4 style={{ margin: "0 0 10px", color: "#8b7355", textTransform: "uppercase", fontSize: "12px" }}>{title}</h4>
+            <p style={{ margin: 0, fontSize: "12px", lineHeight: "1.6" }}>{content}</p>
+            <div onClick={() => setActive(false)} style={{ marginTop: "12px", textAlign: "right", fontSize: "10px", cursor: "pointer", textDecoration: "underline" }}>Cerrar</div>
+          </div>
+        </Html>
+      )}
+    </group>
+  );
+}
+
 function Stairs({ position = [0, 0, 0], rotation = [2, 0, 0] }) {
   const steps = 12;
   const stepHeight = 0.5;
@@ -125,24 +181,27 @@ function RoundTable({ position }) {
 }
 
 function WarehouseBuilding({ playerPos }) {
-  const isInside = playerPos && playerPos.z < 6 && playerPos.x > -25 && playerPos.x < 50;
+  const isInside = playerPos && 
+    playerPos.x > -12.2 && playerPos.x < 26.2 && 
+    playerPos.z < -12.3 && playerPos.z > -36.2;
+    
   const wallOpacity = isInside ? 0.2 : 1;
   const roofOpacity = isInside ? 0.1 : 1;
 
   return (
-    <group position={[0, 0, -16]} scale={[0.55, 0.55, 0.55]}>
+    <group position={[0, 0, -16]} scale={[0.55, 0.55, 0.55]} renderOrder={10}>
       <group>
-        <mesh position={[11, 3, -34.75]} castShadow receiveShadow>
+        <mesh position={[11, 3, -34.75]}>
           <boxGeometry args={[70, 6, 0.5]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} />
+          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
         </mesh>
-        <mesh position={[-23.75, 3, -15]} castShadow receiveShadow>
+        <mesh position={[-23.75, 3, -15]}>
           <boxGeometry args={[0.5, 6, 40]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} />
+          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
         </mesh>
-        <mesh position={[45.75, 3, -15]} castShadow receiveShadow>
+        <mesh position={[45.75, 3, -15]}>
           <boxGeometry args={[0.5, 6, 40]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} />
+          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
         </mesh>
         <mesh position={[11, 0.1, -15]} receiveShadow>
           <boxGeometry args={[69, 0.2, 39]} />
@@ -150,11 +209,11 @@ function WarehouseBuilding({ playerPos }) {
         </mesh>
         <mesh position={[11, 0.25, 4.75]} castShadow receiveShadow>
           <boxGeometry args={[70, 0.5, 0.5]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} />
+          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} depthWrite={!isInside} />
         </mesh>
         <mesh position={[11, 5.25, 4.75]} castShadow receiveShadow>
           <boxGeometry args={[70, 1.5, 0.5]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} />
+          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} depthWrite={!isInside} />
         </mesh>
         {[
           { x: -20.75, width: 6.5 },
@@ -171,7 +230,7 @@ function WarehouseBuilding({ playerPos }) {
             receiveShadow
           >
             <boxGeometry args={[p.width, 4, 0.5]} />
-            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} />
+            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} depthWrite={!isInside} />
           </mesh>
         ))}
         <RoundTable position={[-16, 0.2, 0]} />
@@ -188,9 +247,9 @@ function WarehouseBuilding({ playerPos }) {
         <Stairs position={[-18, 0, 2.5]} rotation={[0, -Math.PI/2, 0]} />
       </group>
 
-      <mesh position={[11, 9, -15]} castShadow receiveShadow>
+      <mesh position={[11, 9, -15]}>
         <boxGeometry args={[70, 6, 40]} />
-        <meshStandardMaterial color="#2a2f35" roughness={0.9} transparent opacity={roofOpacity} />
+        <meshStandardMaterial color="#2a2f35" roughness={0.9} transparent opacity={roofOpacity} polygonOffset polygonOffsetFactor={1} />
       </mesh>
 
       <mesh
@@ -209,6 +268,7 @@ function WarehouseBuilding({ playerPos }) {
         args={[35, 0.05, 0.12]}
         color="#1a2026"
         opacity={roofOpacity}
+        depthWrite={!isInside}
         getPosition={(i) => [11 - 17.5, 14.6 - 0.6, -35 + i * 0.4]}
         getRotation={() => [0, 0, 0.11]}
       />
@@ -217,6 +277,7 @@ function WarehouseBuilding({ playerPos }) {
         args={[35, 0.05, 0.12]}
         color="#1a2026"
         opacity={roofOpacity}
+        depthWrite={!isInside}
         getPosition={(i) => [11 + 17.5, 14.6 - 0.6, -35 + i * 0.4]}
         getRotation={() => [0, 0, -0.11]}
       />
@@ -228,21 +289,14 @@ function WarehouseBuilding({ playerPos }) {
             color="#4a5568"
             roughness={0.2}
             metalness={0.8}
+            transparent
+            opacity={wallOpacity}
+            depthWrite={!isInside}
           />
         </mesh>
         <mesh position={[-16, 6, 5.3]} castShadow receiveShadow>
           <boxGeometry args={[4.2, 3, 0.6]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} />
-        </mesh>
-        <mesh position={[-16, 2.5, 5.05]}>
-          <boxGeometry args={[3, 4, 0.2]} />
-          <meshStandardMaterial
-            color="#2a3548"
-            roughness={0.1}
-            metalness={0.3}
-            transparent
-            opacity={0.1}
-          />
+          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} depthWrite={!isInside} />
         </mesh>
       </group>
 
@@ -254,44 +308,38 @@ function WarehouseBuilding({ playerPos }) {
               color="#4a5568"
               roughness={0.2}
               metalness={0.8}
+              transparent
+              opacity={wallOpacity}
+              depthWrite={!isInside}
             />
           </mesh>
           <mesh position={[x, 6, 5.3]} castShadow receiveShadow>
             <boxGeometry args={[4.2, 3, 0.6]} />
-            <meshStandardMaterial color="#f0efe9" roughness={0.9} />
-          </mesh>
-          <mesh position={[x, 2.5, 5.05]}>
-            <boxGeometry args={[3, 4, 0.2]} />
-            <meshStandardMaterial
-              color="#2a3548"
-              roughness={0.1}
-              metalness={0.3}
-              transparent
-              opacity={0.1}
-            />
+            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} depthWrite={!isInside} />
           </mesh>
         </group>
       ))}
 
-      <mesh position={[-6, 7, 6.75]} castShadow receiveShadow>
+      <mesh position={[-6, 7, 6.75]}>
         <boxGeometry args={[4, 14, 3.5]} />
-        <meshStandardMaterial color="#e5e3dc" roughness={0.8} />
+        <meshStandardMaterial color="#e5e3dc" roughness={0.8} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
       </mesh>
 
-      <mesh position={[4.5, 7, 8]} castShadow receiveShadow>
+      <mesh position={[4.5, 7, 8]}>
         <boxGeometry args={[1.5, 14, 1]} />
-        <meshStandardMaterial color="#e5e3dc" roughness={0.8} />
+        <meshStandardMaterial color="#e5e3dc" roughness={0.8} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
       </mesh>
 
-      <mesh position={[-1.375, 13.5, 6.75]} castShadow receiveShadow>
+      <mesh position={[-1.375, 13.5, 6.75]}>
         <boxGeometry args={[13.25, 2.5, 3.5]} />
-        <meshStandardMaterial color="#e5e3dc" roughness={0.8} />
+        <meshStandardMaterial color="#e5e3dc" roughness={0.8} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
       </mesh>
 
       <InstancedRibs
         count={53}
         args={[0.15, 1, 0.25]}
         color="#c0beb6"
+        opacity={wallOpacity}
         getPosition={(i) => {
           const xPos = -7.875 + i * 0.25;
           let yPos = 7;
@@ -309,7 +357,7 @@ function WarehouseBuilding({ playerPos }) {
 
       <mesh position={[-0.125, 6, 8.25]} castShadow receiveShadow>
         <boxGeometry args={[7.75, 1.5, 0.5]} />
-        <meshStandardMaterial color="#1a202c" roughness={0.8} />
+        <meshStandardMaterial color="#1a202c" roughness={0.8} transparent opacity={wallOpacity} depthWrite={!isInside} />
       </mesh>
 
       <Text
@@ -462,31 +510,73 @@ function WarehouseBuilding({ playerPos }) {
   );
 }
 
-function LowPolyTree({ position, scale = 1 }) {
+function LowPolyTree({ position, scale = 1, isNewton = false }) {
+  const [showInfo, setShowInfo] = useState(false);
+
   return (
     <group
       position={position}
       scale={[scale, scale, scale]}
-      castShadow
-      receiveShadow
+      onClick={(e) => {
+        if (isNewton) {
+          e.stopPropagation();
+          setShowInfo(!showInfo);
+        }
+      }}
     >
-      <mesh position={[0, 0.5, 0]} castShadow>
+      <mesh position={[0, 0.5, 0]}>
         <cylinderGeometry args={[0.2, 0.3, 1, 5]} />
         <meshStandardMaterial color="#8b7355" roughness={0.9} />
       </mesh>
-      <mesh position={[0, 1.5, 0]} castShadow>
+      <mesh position={[0, 1.5, 0]}>
         <coneGeometry args={[1.2, 1.8, 5]} />
         <meshStandardMaterial color="#6b9b88" roughness={0.8} />
       </mesh>
-      <mesh position={[0, 2.4, 0]} castShadow>
+      <mesh position={[0, 2.4, 0]}>
         <coneGeometry args={[0.9, 1.5, 5]} />
         <meshStandardMaterial color="#7bac99" roughness={0.8} />
       </mesh>
+
+      {isNewton && (
+        <>
+          <mesh position={[0.4, 1.8, 0.4]}>
+            <sphereGeometry args={[0.12, 8, 8]} />
+            <meshStandardMaterial color="#d12e2e" emissive="#4d0000" roughness={0.3} />
+          </mesh>
+          {showInfo && (
+            <Html position={[0, 2, 0]} center zIndexRange={[100, 0]}>
+              <div style={{
+                background: "#fdfbf2",
+                padding: "12px",
+                borderRadius: "6px",
+                border: "1px solid #6b9b88",
+                width: "160px",
+                boxShadow: "0 5px 15px rgba(0,0,0,0.2)",
+                color: "#1a1814",
+                fontSize: "11px",
+                lineHeight: "1.4",
+                pointerEvents: "auto"
+              }}>
+                <div style={{ fontWeight: "bold", color: "#6b9b88", marginBottom: "4px", textTransform: "uppercase", fontSize: "10px" }}>
+                  Manzano de Newton
+                </div>
+                Aquí cayó la manzana que inspiró la teoría de la gravedad.
+                <div 
+                  onClick={() => setShowInfo(false)}
+                  style={{ marginTop: "8px", textAlign: "right", color: "#8a837a", cursor: "pointer", fontSize: "9px", textDecoration: "underline" }}
+                >
+                  Cerrar
+                </div>
+              </div>
+            </Html>
+          )}
+        </>
+      )}
     </group>
   );
 }
 
-function ArgentineFlag({ position }) {
+function ArgentineFlag({ position, rotation = [0, 0, 0] }) {
   const flagRef = useRef();
   useFrame((state) => {
     if (flagRef.current) {
@@ -497,22 +587,22 @@ function ArgentineFlag({ position }) {
     }
   });
   return (
-    <group position={position}>
-      <mesh position={[0, 0.2, 0]} castShadow receiveShadow>
+    <group position={position} rotation={rotation}>
+      <mesh position={[0, 0.2, 0]} receiveShadow>
         <boxGeometry args={[2, 0.4, 2]} />
         <meshStandardMaterial color="#d5d3cc" roughness={0.9} />
       </mesh>
-      <mesh position={[0, 4.2, 0]} castShadow>
+      <mesh position={[0, 4.2, 0]}>
         <cylinderGeometry args={[0.06, 0.08, 8]} />
         <meshStandardMaterial color="#a0a0a0" metalness={0.8} roughness={0.2} />
       </mesh>
       <group ref={flagRef} position={[0, 7, 0]}>
         <group position={[1.5, 0, 0]}>
-          <mesh position={[0, 0.6, 0]} castShadow>
+          <mesh position={[0, 0.6, 0]}>
             <boxGeometry args={[3, 0.6, 0.05]} />
             <meshStandardMaterial color="#75AADB" roughness={1} />
           </mesh>
-          <mesh position={[0, 0, 0]} castShadow>
+          <mesh position={[0, 0, 0]}>
             <boxGeometry args={[3, 0.6, 0.05]} />
             <meshStandardMaterial color="#FFFFFF" roughness={1} />
           </mesh>
@@ -520,7 +610,7 @@ function ArgentineFlag({ position }) {
             <boxGeometry args={[0.3, 0.3, 0.05]} />
             <meshStandardMaterial color="#F6EB61" roughness={1} />
           </mesh>
-          <mesh position={[0, -0.6, 0]} castShadow>
+          <mesh position={[0, -0.6, 0]}>
             <boxGeometry args={[3, 0.6, 0.05]} />
             <meshStandardMaterial color="#75AADB" roughness={1} />
           </mesh>
@@ -592,16 +682,16 @@ function MainGate({ position }) {
         <meshStandardMaterial color="#111" roughness={0.8} />
       </mesh>
       <mesh
-        position={[-1.9, 1.25, -0.8]}
-        rotation={[0, -Math.PI / 4, 0]}
+        position={[-2.4, 1.25, 0.8]}
+        rotation={[0, Math.PI / 4, 0]}
         castShadow
       >
         <planeGeometry args={[1.8, 2.4]} />
         <meshStandardMaterial color="#222" roughness={0.7} />
       </mesh>
       <mesh
-        position={[1.9, 1.25, -0.8]}
-        rotation={[0, Math.PI / 4, 0]}
+        position={[2.6, 1.25, 0.8]}
+        rotation={[0, -Math.PI / 4, 0]}
         castShadow
       >
         <planeGeometry args={[1.8, 2.4]} />
@@ -846,18 +936,23 @@ function Scenery({ playerPos }) {
   return (
     <group>
       <WarehouseBuilding playerPos={playerPos} />
-      <ArgentineFlag position={[-12, 0, 4]} />
-      <FenceSegment position={[-8, 0, 9]} length={12} />
+      <ArgentineFlag position={[-11, 0, 4]} rotation={[0, 1, 0]}/>
+      <FenceSegment position={[-7.1, 0, 9]} length={10} />
       <FenceSegment position={[51, 0, 9]} length={98} />
       <FenceSegment
-        position={[-14, 0, -2]}
+        position={[-15, 0, -6.5]}
         rotation={[0, Math.PI / 2, 0]}
-        length={22}
+        length={25}
+      />
+      <FenceSegment
+        position={[-13.5, 0, 7.5]}
+        rotation={[0, -0.785398, 0]}
+        length={3.5}
       />
       <MainGate position={[0, 0, 9]} />
       <SidewalkAndStreet />
       <ConcretePaths boxArgs={[3, 0.02, 3]} position={[0, 0.1, 10.6]} />
-     {Array.from({ length: 9 }).map((_, i) => (
+     {Array.from({ length: 8 }).map((_, i) => (
       <ConcretePaths
         key={i}
         boxArgs={[3, 0.02, 1.5]}
@@ -871,15 +966,43 @@ function Scenery({ playerPos }) {
       />  
       <ConcretePaths
         key={13}
-        boxArgs={[4.3, 0.02, 1.8]}
-        position={[0, 0.1, -12.1]}
+        boxArgs={[3, 0.02, 3]}
+        position={[0, 0.1, -10.1]}
       />  
-      <LowPolyTree position={[-10, 0, -6]} scale={1.5} />
-      <LowPolyTree position={[13, 0, -8]} scale={2} />
-      <LowPolyTree position={[-12, 0, 8]} scale={1.2} />
-      <LowPolyTree position={[15, 0, 5]} scale={1.8} />
-      <LowPolyTree position={[-16, 0, 0]} scale={1.4} />
-      <LowPolyTree position={[20, 0, 2]} scale={1.1} />
+      <ConcretePaths
+        key="path_13"
+        boxArgs={[5, 0.02, 1.8]}
+        position={[0, 0.1, -12.1]}
+      />
+      <ConcretePaths
+        key="path_14"
+        boxArgs={[20, 0.02, 1.8]}
+        position={[-3, 0.1, -9.35]}
+      />
+      <ConcretePaths
+        key="path_16"
+        boxArgs={[2.5, 0.02, 5]}
+        position={[7, 0.1, -10.35]}
+      />  
+      <ConcretePaths
+        key="path_17"
+        boxArgs={[2, 0.02, 10]}
+        position={[-12.9, 0.1, -13.45]}
+      />  
+      <ConcretePaths
+        key="path_18"
+        boxArgs={[20, 0.02, 2]}
+        position={[16.5, 0.1, -11.45]}
+      />  
+
+      <ConcretePaths
+        key="path_19"
+        boxArgs={[2.5, 0.02, 3]}
+        position={[20.2, 0.1, -12.35]}
+      />  
+
+      <LowPolyTree position={[-11, 0, -2]} scale={1.1} isNewton={true} />
+      <LandingSteps position={[6.4, 0, -12.2]} />
       <ConcreteBench position={[-9, 0, -11.5]} />
       <BicycleRack position={[15, 0, 7]} rotation={[0, 0, 0]} />
       <BicycleRack position={[19, 0, 7]} rotation={[0, 0, 0]} />
@@ -965,7 +1088,7 @@ function PlayerDino({ url, scale = 1.5, onPositionUpdate }) {
   const ref = useRef();
   const groupRef = useRef();
   const [, getKeys] = useKeyboardControls();
-  const pos = useMemo(() => new THREE.Vector3(0, 0, 15), []);
+  const pos = useMemo(() => new THREE.Vector3(0, 0, 0), []);
   const velocity = useMemo(() => new THREE.Vector3(), []);
   const speed = 10;
 
@@ -995,7 +1118,8 @@ function PlayerDino({ url, scale = 1.5, onPositionUpdate }) {
     }
 
     groupRef.current.position.copy(pos);
-    onPositionUpdate?.(pos);
+    ref.current.scale.set(1.5, 2.2, 1);
+    onPositionUpdate?.(pos.clone());
     invalidate();
   });
 
@@ -1278,12 +1402,17 @@ const ProjectFrame = React.memo(function ProjectFrame({
 
 function SceneGroup({ projects, activeId, setActiveId }) {
   const groupRef = useRef();
-  const [playerPos, setPlayerPos] = useState(new THREE.Vector3(0, 0, 15));
+  const [playerPos, setPlayerPos] = useState(new THREE.Vector3(0, 0, 0));
+  const [showHint, setShowHint] = useState(true);
 
   useFrame((state, delta) => {
     let tX = 0,
       tY = 0,
       tZ = 0;
+      
+    if (showHint && (Math.abs(playerPos.x) > 0.1 || Math.abs(playerPos.z) > 0.1)) {
+      setShowHint(false);
+    }
     if (activeId !== null) {
       tX = -positions[activeId][0] * SPACING;
       tZ = -positions[activeId][1] * SPACING;
@@ -1291,8 +1420,9 @@ function SceneGroup({ projects, activeId, setActiveId }) {
     }
     const isMobile = window.innerWidth < 768;
     if (activeId === null) {
-      tX = 0;
-      tZ = 8;
+      tX = -playerPos.x;
+      tZ = -playerPos.z + 5;
+      tY = 0;
       if (!isMobile) {
         tX += state.pointer.x * 2;
         tZ += state.pointer.y * 2;
@@ -1325,6 +1455,21 @@ function SceneGroup({ projects, activeId, setActiveId }) {
         />
       ))}
       <PlayerDino url="dinoCharacter.png" scale={1.5} onPositionUpdate={setPlayerPos} />
+      {showHint && (
+        <Html position={[0, 2, 0]} center>
+          <div style={{
+            background: "rgba(0,0,0,0.8)",
+            color: "white",
+            padding: "8px 16px",
+            borderRadius: "20px",
+            fontSize: "12px",
+            whiteSpace: "nowrap",
+            pointerEvents: "none"
+          }}>
+            Moverse con WASD o FLECHAS
+          </div>
+        </Html>
+      )}
       <WalkingSprite url="botdia.png" scale={1.8} />
       <Scenery playerPos={playerPos} />
       <Particles />
@@ -1448,7 +1593,6 @@ export default function Story3D({ projects, active, onClose }) {
 
         {/* ── Canvas: frameloop="demand" → only renders when invalidate() called ── */}
         <Canvas
-          shadows={{ type: THREE.PCFShadowMap }}
           orthographic
           frameloop="demand"
           camera={{ position: [15, 15, 20], zoom: 50, near: -100, far: 100 }}
@@ -1464,9 +1608,6 @@ export default function Story3D({ projects, active, onClose }) {
             position={[15, 25, 10]}
             intensity={1.8}
             color="#fffaf0"
-            castShadow
-            shadow-mapSize={[256, 256]}
-            shadow-bias={-0.0001}
           />
 
           <CameraController activeId={activeId} />
