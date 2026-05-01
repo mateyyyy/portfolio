@@ -1632,7 +1632,7 @@ function Featured3D({ onStartStory }) {
           <div className="featured-3d-tag">Experiencia Inmersiva</div>
           <h2 className="featured-3d-title">Explora mi Portfolio en 3D</h2>
           <p className="featured-3d-desc">
-            Interactúa con mis proyectos en un entorno tridimensional. Camina por el galpón, descubre detalles y vive una experiencia única.
+            Explora mis proyectos dentro de una recreación de mi universidad. Este espacio representa el lugar donde me formé y donde nacieron las ideas que hoy son realidad.
           </p>
           <button className="featured-3d-btn">
             Entrar al Mundo 3D
