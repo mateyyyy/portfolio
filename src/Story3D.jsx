@@ -547,10 +547,10 @@ function WarehouseBuilding({ playerPos }) {
         </group>
 
         {/* Pared detallada debajo del entrepiso (Oficinas) */}
-        <group position={[-14.9, 3, -25]} visible={interiorOpacity > 0.01}>
+        <group position={[-14.9, 3, -32]} visible={interiorOpacity > 0.01}>
           {/* Pared Principal */}
           <mesh receiveShadow>
-            <boxGeometry args={[0.2, 6, 24]} />
+            <boxGeometry args={[0.2, 6, 45]} />
             <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
           </mesh>
           
@@ -1218,9 +1218,9 @@ function Scenery({ playerPos }) {
       <FenceSegment position={[-8.6, 0, 9]} length={15} />
       <FenceSegment position={[51, 0, 9]} length={98} />
       <FenceSegment
-        position={[-19, 0, -6.5]}
+        position={[-19, 0, -11.5]}
         rotation={[0, Math.PI / 2, 0]}
-        length={25}
+        length={35}
       />
       <FenceSegment
         position={[-17.5, 0, 7.5]}
@@ -1254,8 +1254,8 @@ function Scenery({ playerPos }) {
       />
       <ConcretePaths
         key="path_14"
-        boxArgs={[25, 0.02, 1.8]}
-        position={[-5, 0.1, -9.35]}
+        boxArgs={[23, 0.02, 1.8]}
+        position={[-4, 0.1, -9.35]}
       />
       <ConcretePaths
         key="path_16"
@@ -1263,9 +1263,9 @@ function Scenery({ playerPos }) {
         position={[7, 0.1, -10.35]}
       />  
       <ConcretePaths
-        key="path_17"
-        boxArgs={[2, 0.02, 15]}
-        position={[-16.9, 0.1, -15.97]}
+        key="CaminoIzquierdo"
+        boxArgs={[1.8, 0.02, 30]}
+        position={[-15.9, 0.1, -23.45]}
       />  
       <ConcretePaths
         key="path_18"
