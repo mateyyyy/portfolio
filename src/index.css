@@ -2010,3 +2010,128 @@ body.story-lock {
     display: none;
   }
 }
+
+/* ─── FEATURED 3D SECTION ────────────────────────────────────────────────── */
+.featured-3d-section {
+  margin-top: 40px !important;
+  margin-bottom: 120px !important;
+}
+
+.featured-3d-container {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 0;
+  background: var(--ink);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 32px 64px rgba(26, 24, 20, 0.12);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.featured-3d-container:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 48px 80px rgba(26, 24, 20, 0.18);
+}
+
+.featured-3d-content {
+  padding: 80px 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 24px;
+  z-index: 2;
+  background: var(--ink);
+  color: #fff;
+}
+
+.featured-3d-tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sage-light);
+}
+
+.featured-3d-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 600;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.featured-3d-desc {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  max-width: 380px;
+}
+
+.featured-3d-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 28px;
+  background: var(--sage);
+  color: #fff;
+  border: none;
+  border-radius: 2px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  width: fit-content;
+  margin-top: 12px;
+}
+
+.featured-3d-container:hover .featured-3d-btn {
+  background: var(--sage-light);
+  transform: translateX(4px);
+}
+
+.featured-3d-image-wrap {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.featured-3d-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.featured-3d-container:hover .featured-3d-img {
+  transform: scale(1.1);
+}
+
+.featured-3d-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, var(--ink) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+@media (max-width: 960px) {
+  .featured-3d-container {
+    grid-template-columns: 1fr;
+  }
+  .featured-3d-content {
+    padding: 64px 40px;
+    order: 2;
+  }
+  .featured-3d-image-wrap {
+    height: 300px;
+    order: 1;
+  }
+  .featured-3d-overlay {
+    background: linear-gradient(to top, var(--ink) 0%, transparent 40%);
+  }
+}

@@ -91,8 +91,7 @@ function InfoSign({ position, title, content }) {
   );
 }
 
-function Stairs({ position = [0, 0, 0], rotation = [2, 0, 0] }) {
-  const steps = 12;
+function Stairs({ position = [0, 0, 0], rotation = [2, 0, 0], steps }) {
   const stepHeight = 0.5;
   const stepDepth = 0.6;
 
@@ -183,37 +182,75 @@ function RoundTable({ position }) {
 function WarehouseBuilding({ playerPos }) {
   const isInside = playerPos && 
     playerPos.x > -12.2 && playerPos.x < 26.2 && 
-    playerPos.z < -12.3 && playerPos.z > -36.2;
+    playerPos.z < -12.3 && playerPos.z > -56.2; 
+  
+  const isOnUpperFloor = playerPos && playerPos.y > 3;
     
-  const wallOpacity = isInside ? 0.2 : 1;
-  const roofOpacity = isInside ? 0.1 : 1;
+  const wallOpacity = 1;
+  const roofOpacity = 1;
+  const interiorOpacity = isInside ? 1 : 0;
+
+  // Stable functions for InstancedRibs
+  const getRoofRibPosLeft = useMemo(() => (i) => [11 - 17.5, 14.6 - 0.58, -35 + i * 0.4], []);
+  const getRoofRibPosRight = useMemo(() => (i) => [11 + 17.5, 14.6 - 0.58, -35 + i * 0.4], []);
+  
+  const getColRibPos = useMemo(() => (i) => {
+    const xPos = -7.875 + i * 0.25;
+    let yPos = 7.02;
+    let zPos = 8.58;
+    if (xPos > -3.9 && xPos < 3.7) yPos = 13.52;
+    return [xPos, yPos, zPos];
+  }, []);
+
+  const getColRibScale = useMemo(() => (i) => {
+    const xPos = -7.875 + i * 0.25;
+    let height = 15.5;
+    if (xPos > -3.9 && xPos < 3.7) height = 2.5;
+    return [1, height, 1];
+  }, []);
 
   return (
     <group position={[0, 0, -16]} scale={[0.55, 0.55, 0.55]} renderOrder={10}>
+      {/* Luz interior cálida - solo visible adentro */}
+      {isInside && (
+        <>
+          <pointLight position={[11, 8, -15]} intensity={40} distance={50} decay={2} color="#ffe4a0" />
+          <pointLight position={[-5, 8, -25]} intensity={25} distance={35} decay={2} color="#ffd580" />
+          <pointLight position={[30, 8, -10]} intensity={25} distance={35} decay={2} color="#ffe4a0" />
+          <ambientLight intensity={0.4} color="#fff0cc" />
+        </>
+      )}
+      {/* Piso interior hormigon */}
+      {isInside && (
+        <mesh position={[11, 0.15, -25]} receiveShadow>
+          <boxGeometry args={[70, 0.08, 60]} />
+          <meshStandardMaterial color="#c8c6c0" roughness={0.97} />
+        </mesh>
+      )}
       <group>
-        <mesh position={[11, 3, -34.75]}>
-          <boxGeometry args={[70, 6, 0.5]} />
+        <mesh position={[11, 3, -54.75]}>
+          <boxGeometry args={[70.5, 6, 0.5]} />
           <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
         </mesh>
-        <mesh position={[-23.75, 3, -15]}>
-          <boxGeometry args={[0.5, 6, 40]} />
+        <mesh position={[-24.25, 3, -25]}>
+          <boxGeometry args={[0.5, 6, 60]} />
           <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
         </mesh>
-        <mesh position={[45.75, 3, -15]}>
-          <boxGeometry args={[0.5, 6, 40]} />
+        <mesh position={[46.25, 3, -25]}>
+          <boxGeometry args={[0.5, 6, 60]} />
           <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
         </mesh>
-        <mesh position={[11, 0.1, -15]} receiveShadow>
-          <boxGeometry args={[69, 0.2, 39]} />
+        <mesh position={[11, 0.1, -25]} receiveShadow>
+          <boxGeometry args={[70, 0.2, 59]} />
           <meshStandardMaterial color="#e0ded8" />
         </mesh>
-        <mesh position={[11, 0.25, 4.75]} castShadow receiveShadow>
-          <boxGeometry args={[70, 0.5, 0.5]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} depthWrite={!isInside} />
+        <mesh position={[11, 0.25, 4.75]} visible={!isInside}>
+          <boxGeometry args={[70.5, 0.5, 0.5]} />
+          <meshStandardMaterial color="#f0efe9" roughness={0.9} />
         </mesh>
-        <mesh position={[11, 5.25, 4.75]} castShadow receiveShadow>
-          <boxGeometry args={[70, 1.5, 0.5]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} depthWrite={!isInside} />
+        <mesh position={[11, 5.25, 4.75]} visible={!isInside}>
+          <boxGeometry args={[70.5, 1.5, 0.5]} />
+          <meshStandardMaterial color="#f0efe9" roughness={0.9} />
         </mesh>
         {[
           { x: -20.75, width: 6.5 },
@@ -223,66 +260,223 @@ function WarehouseBuilding({ playerPos }) {
           { x: 24.5, width: 4 },
           { x: 37.5, width: 16 },
         ].map((p, i) => (
-          <mesh
-            key={`p_${i}`}
-            position={[p.x, 2.5, 4.75]}
-            castShadow
-            receiveShadow
-          >
+          <mesh key={`p_${i}`} position={[p.x, 2.5, 4.75]} visible={!isInside}>
             <boxGeometry args={[p.width, 4, 0.5]} />
-            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} depthWrite={!isInside} />
+            <meshStandardMaterial color="#f0efe9" roughness={0.9} />
           </mesh>
         ))}
-        <RoundTable position={[-16, 0.2, 0]} />
-        <RoundTable position={[-16, 0.2, -6]} />
-        <RoundTable position={[14, 0.2, 0]} />
         <RoundTable position={[14, 0.2, 3.2]} />
+        <Chair position={[12, 0, 2.9]} rotation={[0, Math.PI/2, 0]} />
+        <Chair position={[15.5, 0, 2.9]} rotation={[0, -Math.PI/2, 0]} />
+
         <RoundTable position={[21, 0.2, 3.2]} />
-        <RoundTable position={[28, 0.2, 3.2]} />
+        <Chair position={[18.5, 0, 2.9]} rotation={[0, Math.PI/2, 0]} />
+        <Chair position={[22.5, 0, 2.9]} rotation={[0, -Math.PI/2, 0]} />
         
-        {/* Interior Chairs */}
-        <Chair position={[26, 0, 3.5]} rotation={[0, 90, 0]} />
-        <Chair position={[19, 0, 3.5]} rotation={[0, 90, 0]} />
-        <Chair position={[28, 0.2, 0]} rotation={[0, Math.PI, 0]} />
-        <Stairs position={[-18, 0, 2.5]} rotation={[0, -Math.PI/2, 0]} />
+        <RoundTable position={[28, 0.2, 3.2]} />
+        <Chair position={[26, 0, 2.9]} rotation={[0, Math.PI/2, 0]} />
+        <Chair position={[29.5, 0, 2.9]} rotation={[0, -Math.PI/2, 0]} />
+
+        <RoundTable position={[14, 0.2, -7.2]} />
+        <Chair position={[12, 0, -7.9]} rotation={[0, Math.PI/2, 0]} />
+        <Chair position={[15.5, 0, -7.9]} rotation={[0, -Math.PI/2, 0]} />
+
+        <RoundTable position={[21, 0.2, -7.2]} />
+        <Chair position={[18.5, 0, -7.9]} rotation={[0, Math.PI/2, 0]} />
+        <Chair position={[22.5, 0, -7.9]} rotation={[0, -Math.PI/2, 0]} />
+        
+        <RoundTable position={[28, 0.2, -7.2]} />
+        <Chair position={[26, 0, -7.9]} rotation={[0, Math.PI/2, 0]} />
+        <Chair position={[29.5, 0, -7.9]} rotation={[0, -Math.PI/2, 0]} />
+
+        {/* Segundo piso de la cafetería - Solo se ve el techo si estás arriba */}
+        <group position={[16.4, 6, -3]} visible={interiorOpacity > 0.01 && isOnUpperFloor}>
+          {/* Piso */}
+          <mesh receiveShadow>
+            <boxGeometry args={[60, 0.2, 13]} />
+            <meshStandardMaterial color="#d3d0c8" roughness={0.85} transparent opacity={interiorOpacity} />
+          </mesh>
+
+          {/* Paredes de arriba (Habitaciones/Oficinas) */}
+          {/* Pared Trasera */}
+          <mesh position={[12.5, 2, -6.4]}>
+            <boxGeometry args={[35, 4, 0.2]} />
+            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+          </mesh>
+
+          {/* Pared Frontal con Puertas */}
+          <group position={[-5, 2, -.25]} rotation={[0, Math.PI/2, 0]}>
+            <mesh>
+              <boxGeometry args={[12, 4, 0.2]} />
+              <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+            </mesh>
+            {/* Puertas en los costados */}
+            {[-4.5, 4.5].map((x, i) => (
+              <group key={`front_wall_door_${i}`} position={[x, -0.75, 0.11]}>
+                <mesh>
+                  <boxGeometry args={[1.5, 2.5, 0.05]} />
+                  <meshStandardMaterial color="#8f3f2e" roughness={0.8} transparent opacity={interiorOpacity} />
+                </mesh>
+                <mesh position={[0.5, 0, 0.03]}>
+                  <sphereGeometry args={[0.04, 16, 16]} />
+                  <meshStandardMaterial color="#c0c0c0" metalness={0.8} />
+                </mesh>
+              </group>
+            ))}
+          </group>
+
+         
+
+          {/* Baranda de vidrio */}
+          <group position={[0, 0.6, 6.51]}>
+             <mesh>
+               <boxGeometry args={[60, 1.2, 0.05]} />
+               <meshStandardMaterial color="#a0c0e0" transparent opacity={0.3 * interiorOpacity} roughness={0.1} />
+             </mesh>
+             {/* Pasamanos superior */}
+             <mesh position={[0, 0.6, 0]}>
+               <boxGeometry args={[60.1, 0.08, 0.1]} />
+               <meshStandardMaterial color="#222" />
+             </mesh>
+          </group>
+
+          <RoundTable position={[-11, 0.2, 1]} />
+          <Chair position={[-13, 0, 1]} rotation={[0, Math.PI/2, 0]} />
+          <Chair position={[-9.6, 0, 1]} rotation={[0, -Math.PI/2, 0]} />
+
+          <RoundTable position={[-11, 0.2, -4]} />
+          <Chair position={[-13, 0, -4]} rotation={[0, Math.PI/2, 0]} />
+          <Chair position={[-9.6, 0, -4]} rotation={[0, -Math.PI/2, 0]} />
+        </group>
+       
+        <Stairs position={[-18, 0, -6.5]} rotation={[0, -Math.PI, 0]} steps={6}/>
+        <Stairs position={[-15, 3, -3.5]} rotation={[0,0, 0]} steps={7}/>
+        {/*Entre piso escalera*/}
+         <group position={[-16.1, 3.075, 0]} visible={interiorOpacity > 0.01}>
+          <mesh receiveShadow>
+            <boxGeometry args={[6, 0.25, 5]} />
+            <meshStandardMaterial color="#d3d0c8" roughness={0.85} transparent opacity={interiorOpacity} />
+          </mesh>
+        </group>
+        {/* Pared interior con ventanas (unificada) */}
+        <group position={[26, 3, -10]} rotation={[0, Math.PI, 0]} visible={interiorOpacity > 0.01}>
+          {/* Parte Inferior */}
+          <mesh position={[0, -2, 0]}>
+            <boxGeometry args={[40, 2, 0.5]} />
+            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} polygonOffset polygonOffsetFactor={1} />
+          </mesh>
+          {/* Parte Superior */}
+          <mesh position={[0, 2.5, 0]}>
+            <boxGeometry args={[40, 1, 0.5]} />
+            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} polygonOffset polygonOffsetFactor={1} />
+          </mesh>
+          {/* Pilares verticales */}
+          {[ -16.5, -5.5, 5.5, 16.5 ].map((x, i) => (
+            <mesh key={`wall_pillar_${i}`} position={[x, 0.5, 0]}>
+              <boxGeometry args={[7, 3, 0.5]} />
+              <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} polygonOffset polygonOffsetFactor={1} />
+            </mesh>
+          ))}
+        </group>
+        {/* Mostrador Kiosko */}
+        <mesh position={[37, 0.5, -4.7]} rotation={[0, Math.PI/2, 0]} visible={interiorOpacity > 0.01}>
+          <boxGeometry args={[10, 3.5, 0.5]} />
+          <meshStandardMaterial color="#4b4b4b" roughness={0.9} transparent opacity={interiorOpacity} polygonOffset polygonOffsetFactor={1} />
+        </mesh>
+        <mesh position={[41.75, 0.5, -0]} rotation={[0, Math.PI, 0]} visible={interiorOpacity > 0.01}>
+          <boxGeometry args={[9, 3.5, 0.5]} />
+          <meshStandardMaterial color="#4b4b4b" roughness={0.9} transparent opacity={interiorOpacity} polygonOffset polygonOffsetFactor={1} />
+        </mesh>
+
+        {/* Entrepiso / Piso intermedio */}
+        <group position={[-18.8, 6.15, -25]} visible={interiorOpacity > 0.01}>
+          <mesh receiveShadow>
+            <boxGeometry args={[8, 0.25, 24]} />
+            <meshStandardMaterial color="#d3d0c8" roughness={0.85} transparent opacity={interiorOpacity} />
+          </mesh>
+          {/* Baranda del entrepiso */}
+          <mesh position={[4.05, 0.7, 0]}>
+            <boxGeometry args={[0.1, 1.4, 24]} />
+            <meshStandardMaterial color="#6f6b64" transparent opacity={interiorOpacity} />
+          </mesh>
+        </group>
+
+        {/* Pared detallada debajo del entrepiso (Oficinas) */}
+        <group position={[-14.9, 3, -25]} visible={interiorOpacity > 0.01}>
+          {/* Pared Principal */}
+          <mesh receiveShadow>
+            <boxGeometry args={[0.2, 6, 24]} />
+            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+          </mesh>
+          
+          {/* Puertas (2 unidades) */}
+          {[-7, 7].map((z, i) => (
+            <group key={`office_door_${i}`} position={[0.1, -1.75, z]}>
+              {/* Marco/Puerta madera */}
+              <mesh>
+                <boxGeometry args={[0.05, 2.5, 1.4]} />
+                <meshStandardMaterial color="#8f3f2e" roughness={0.8} transparent opacity={interiorOpacity} />
+              </mesh>
+              {/* Vidrio puerta */}
+              <mesh position={[0.03, 0.4, 0]}>
+                <boxGeometry args={[0.01, 1, 0.8]} />
+                <meshStandardMaterial color="#c8d8e8" transparent opacity={0.3 * interiorOpacity} />
+              </mesh>
+            </group>
+          ))}
+
+          {/* Ventanas de oficina */}
+          {[-2.5, 2.5].map((z, i) => (
+            <group key={`office_win_${i}`} position={[0.1, 1, z]}>
+              {/* Marco negro ventana */}
+              <mesh>
+                <boxGeometry args={[0.05, 1.6, 2.6]} />
+                <meshStandardMaterial color="#1a1e24" roughness={0.7} transparent opacity={interiorOpacity} />
+              </mesh>
+              {/* Vidrio */}
+              <mesh position={[0.03, 0, 0]}>
+                <boxGeometry args={[0.01, 1.4, 2.4]} />
+                <meshStandardMaterial color="#c8d8e8" transparent opacity={0.4 * interiorOpacity} />
+              </mesh>
+            </group>
+          ))}
+        </group>
       </group>
 
-      <mesh position={[11, 9, -15]}>
-        <boxGeometry args={[70, 6, 40]} />
-        <meshStandardMaterial color="#2a2f35" roughness={0.9} transparent opacity={roofOpacity} polygonOffset polygonOffsetFactor={1} />
+      <mesh position={[11, 9, -15]} visible={!isInside}>
+        <boxGeometry args={[70.5, 6, 40]} />
+        <meshStandardMaterial color="#2a2f35" roughness={0.9} />
       </mesh>
 
       <mesh
         position={[11, 13.1667, -15]}
         rotation={[-Math.PI / 2, 0, 0]}
-        scale={[40.41, 1, 2.3333]}
-        castShadow
-        receiveShadow
+        scale={[40.7, 1, 2.3333]}
+        visible={!isInside}
       >
         <cylinderGeometry args={[1, 1, 40, 3]} />
-        <meshStandardMaterial color="#2a2f35" roughness={0.9} flatShading transparent opacity={roofOpacity} />
+        <meshStandardMaterial color="#2a2f35" roughness={0.9} flatShading />
       </mesh>
 
-      <InstancedRibs
-        count={101}
-        args={[35, 0.05, 0.12]}
-        color="#1a2026"
-        opacity={roofOpacity}
-        depthWrite={!isInside}
-        getPosition={(i) => [11 - 17.5, 14.6 - 0.6, -35 + i * 0.4]}
-        getRotation={() => [0, 0, 0.11]}
-      />
-      <InstancedRibs
-        count={101}
-        args={[35, 0.05, 0.12]}
-        color="#1a2026"
-        opacity={roofOpacity}
-        depthWrite={!isInside}
-        getPosition={(i) => [11 + 17.5, 14.6 - 0.6, -35 + i * 0.4]}
-        getRotation={() => [0, 0, -0.11]}
-      />
+      <group visible={!isInside}>
+        <InstancedRibs
+          count={101}
+          args={[35, 0.05, 0.12]}
+          color="#1a2026"
+          getPosition={getRoofRibPosLeft}
+          getRotation={() => [0, 0, 0.11]}
+        />
+        <InstancedRibs
+          count={101}
+          args={[35, 0.05, 0.12]}
+          color="#1a2026"
+          getPosition={getRoofRibPosRight}
+          getRotation={() => [0, 0, -0.11]}
+        />
+      </group>
 
-      <group key="win_front_left">
+      <group visible={!isInside}>
+        <group key="win_front_left">
         <mesh position={[-16, 9.5, 5.05]}>
           <boxGeometry args={[3, 4, 0.2]} />
           <meshStandardMaterial
@@ -291,12 +485,13 @@ function WarehouseBuilding({ playerPos }) {
             metalness={0.8}
             transparent
             opacity={wallOpacity}
-            depthWrite={!isInside}
+            polygonOffset
+            polygonOffsetFactor={1}
           />
         </mesh>
-        <mesh position={[-16, 6, 5.3]} castShadow receiveShadow>
+        <mesh position={[-16, 6, 5.3]}>
           <boxGeometry args={[4.2, 3, 0.6]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} depthWrite={!isInside} />
+          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
         </mesh>
       </group>
 
@@ -310,54 +505,45 @@ function WarehouseBuilding({ playerPos }) {
               metalness={0.8}
               transparent
               opacity={wallOpacity}
-              depthWrite={!isInside}
+              polygonOffset
+              polygonOffsetFactor={1}
             />
           </mesh>
-          <mesh position={[x, 6, 5.3]} castShadow receiveShadow>
+          <mesh position={[x, 6, 5.3]}>
             <boxGeometry args={[4.2, 3, 0.6]} />
-            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} depthWrite={!isInside} />
+            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
           </mesh>
         </group>
       ))}
 
-      <mesh position={[-6, 7, 6.75]}>
+      </group>{/* fin visible={!isInside} - ventanas frontales */}
+
+      <mesh position={[-6, 7, 6.75]} visible={!isInside}>
         <boxGeometry args={[4, 14, 3.5]} />
-        <meshStandardMaterial color="#e5e3dc" roughness={0.8} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
+        <meshStandardMaterial color="#e5e3dc" roughness={0.8} />
       </mesh>
 
-      <mesh position={[4.5, 7, 8]}>
+      <mesh position={[4.5, 7, 8]} visible={!isInside}>
         <boxGeometry args={[1.5, 14, 1]} />
-        <meshStandardMaterial color="#e5e3dc" roughness={0.8} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
+        <meshStandardMaterial color="#e5e3dc" roughness={0.8} />
       </mesh>
 
-      <mesh position={[-1.375, 13.5, 6.75]}>
+      <mesh position={[-1.375, 13.5, 6.75]} visible={!isInside}>
         <boxGeometry args={[13.25, 2.5, 3.5]} />
-        <meshStandardMaterial color="#e5e3dc" roughness={0.8} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
+        <meshStandardMaterial color="#e5e3dc" roughness={0.8} />
       </mesh>
 
       <InstancedRibs
         count={53}
         args={[0.15, 1, 0.25]}
         color="#c0beb6"
-        opacity={wallOpacity}
-        getPosition={(i) => {
-          const xPos = -7.875 + i * 0.25;
-          let yPos = 7;
-          let zPos = 8.58;
-          if (xPos > -3.9 && xPos < 3.7) yPos = 13.5;
-          return [xPos, yPos, zPos];
-        }}
-        getScale={(i) => {
-          const xPos = -7.875 + i * 0.25;
-          let height = 15.5;
-          if (xPos > -3.9 && xPos < 3.7) height = 2.5;
-          return [1, height, 1];
-        }}
+        getPosition={getColRibPos}
+        getScale={getColRibScale}
       />
 
-      <mesh position={[-0.125, 6, 8.25]} castShadow receiveShadow>
+      <mesh position={[-0.125, 6, 8.25]}>
         <boxGeometry args={[7.75, 1.5, 0.5]} />
-        <meshStandardMaterial color="#1a202c" roughness={0.8} transparent opacity={wallOpacity} depthWrite={!isInside} />
+        <meshStandardMaterial color="#1a202c" roughness={0.8} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
       </mesh>
 
       <Text
@@ -397,47 +583,10 @@ function WarehouseBuilding({ playerPos }) {
         </Center>
       </group>
 
-      <mesh position={[0, 7, 5]} castShadow receiveShadow>
+      <mesh position={[0, 7, 5]}>
         <boxGeometry args={[8, 14, 0.5]} />
         <meshStandardMaterial color="#d5d3cc" roughness={0.9} />
       </mesh>
-
-      <group position={[-2, 2.6, 5.3]}>
-        <mesh>
-          <boxGeometry args={[3, 5.2, 0.2]} />
-          <meshStandardMaterial color="#111" />
-        </mesh>
-        <mesh position={[0, 0, 0.1]}>
-          <planeGeometry args={[2.8, 5]} />
-          <meshStandardMaterial
-            color="#4a5568"
-            roughness={0.2}
-            metalness={0.8}
-          />
-        </mesh>
-        <mesh position={[0, 0, 0.11]}>
-          <boxGeometry args={[0.05, 5, 0.02]} />
-          <meshStandardMaterial color="#111" />
-        </mesh>
-      </group>
-      <group position={[2, 2.6, 5.3]}>
-        <mesh>
-          <boxGeometry args={[3, 5.2, 0.2]} />
-          <meshStandardMaterial color="#111" />
-        </mesh>
-        <mesh position={[0, 0, 0.1]}>
-          <planeGeometry args={[2.8, 5]} />
-          <meshStandardMaterial
-            color="#4a5568"
-            roughness={0.2}
-            metalness={0.8}
-          />
-        </mesh>
-        <mesh position={[0, 0, 0.11]}>
-          <boxGeometry args={[0.05, 5, 0.02]} />
-          <meshStandardMaterial color="#111" />
-        </mesh>
-      </group>
 
       <group position={[-2, 9.5, 5.3]}>
         <mesh>
@@ -450,11 +599,9 @@ function WarehouseBuilding({ playerPos }) {
             color="#4a5568"
             roughness={0.2}
             metalness={0.8}
+            transparent
+            opacity={wallOpacity}
           />
-        </mesh>
-        <mesh position={[0, 0, 0.11]}>
-          <boxGeometry args={[0.05, 5, 0.02]} />
-          <meshStandardMaterial color="#111" />
         </mesh>
       </group>
       <group position={[2, 9.5, 5.3]}>
@@ -468,11 +615,9 @@ function WarehouseBuilding({ playerPos }) {
             color="#4a5568"
             roughness={0.2}
             metalness={0.8}
+            transparent
+            opacity={wallOpacity}
           />
-        </mesh>
-        <mesh position={[0, 0, 0.11]}>
-          <boxGeometry args={[0.05, 5, 0.02]} />
-          <meshStandardMaterial color="#111" />
         </mesh>
       </group>
 
@@ -1084,7 +1229,7 @@ function WalkingSprite({ url, scale = 1.5 }) {
   );
 }
 
-function PlayerDino({ url, scale = 1.5, onPositionUpdate }) {
+function PlayerDino({ url, scale = 1.5, onPositionUpdate, teleportPos }) {
   const ref = useRef();
   const groupRef = useRef();
   const [, getKeys] = useKeyboardControls();
@@ -1102,12 +1247,22 @@ function PlayerDino({ url, scale = 1.5, onPositionUpdate }) {
     if (left) velocity.x -= 1;
     if (right) velocity.x += 1;
 
+    // Rotate velocity relative to view rotation
+    if (velocity.length() > 0 && window.storyViewRotation) {
+      const angle = (window.storyViewRotation * Math.PI) / -180;
+      velocity.applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
+    }
+
+    // Teletransporte
+    if (teleportPos) {
+      pos.copy(teleportPos);
+    }
+
     if (velocity.length() > 0) {
       velocity.normalize().multiplyScalar(speed * delta);
       pos.add(velocity);
-      if (velocity.x > 0) ref.current.scale.x = scale;
-      else if (velocity.x < 0) ref.current.scale.x = -scale;
 
+      ref.current.scale.x = velocity.x < 0 ? -scale : scale;
       const time = state.clock.getElapsedTime();
       ref.current.position.y = Math.abs(Math.sin(time * 15)) * 0.15 + scale * 0.4;
       ref.current.rotation.z = Math.sin(time * 15) * 0.05;
@@ -1117,8 +1272,30 @@ function PlayerDino({ url, scale = 1.5, onPositionUpdate }) {
       ref.current.rotation.z = 0;
     }
 
+    const isInside = pos.x > -12.2 && pos.x < 26.2 && pos.z < -12.3 && pos.z > -56.2;
+    
+    // Cálculo de altura (Y) - Simplificado: solo pisos, no escaleras auto
+    let targetY = 0;
+    
+    // Entrepiso oficinas
+    if (pos.x > -22.8 && pos.x < -14.8 && pos.z < -13 && pos.z > -37) {
+      targetY = 6;
+    }
+
+    // Entrepiso cafetería (Ajustado a local posZ=-3, height=6, scale=0.55)
+    // World Z = -16 + (-3 * 0.55) = -17.65
+    // World Y = 6 * 0.55 = 3.3
+    if (pos.x > -12 && pos.x < 26 && pos.z < -5 && pos.z > -30) {
+      targetY = 6 * 0.55; // 3.3
+    }
+
+    if (pos.y < 2.5 && targetY > 0) {
+       // Si está en el suelo y entra en zona de entrepiso, no sube solo (necesita botón)
+    } else {
+       pos.y = THREE.MathUtils.lerp(pos.y, targetY, 5 * delta);
+    }
+
     groupRef.current.position.copy(pos);
-    ref.current.scale.set(1.5, 2.2, 1);
     onPositionUpdate?.(pos.clone());
     invalidate();
   });
@@ -1133,29 +1310,24 @@ function PlayerDino({ url, scale = 1.5, onPositionUpdate }) {
 }
 
 // ── CAMERA ZOOM via useThree (works with frameloop="demand") ──────────────────
-function CameraController({ activeId }) {
+function CameraController({ activeId, playerPos }) {
   const { camera, invalidate: inv } = useThree();
   const targetZoom = useRef(50);
-  const targetGroupPos = useRef(new THREE.Vector3());
-
-  useEffect(() => {
-    const isMobile = window.innerWidth < 768;
-    targetZoom.current =
-      activeId !== null ? (isMobile ? 45 : 90) : isMobile ? 15 : 40;
-    inv();
-  }, [activeId, inv]);
+  const targetCamPos = useRef(new THREE.Vector3(15, 15, 20));
 
   useFrame((state, delta) => {
-    const prev = state.camera.zoom;
-    state.camera.zoom = THREE.MathUtils.lerp(
-      prev,
-      targetZoom.current,
-      4 * delta,
-    );
-    if (Math.abs(state.camera.zoom - prev) > 0.01) {
-      state.camera.updateProjectionMatrix();
-      invalidate();
-    }
+    const isMobile = window.innerWidth < 768;
+
+    let baseZoom = isMobile ? 15 : 40; 
+    if (activeId !== null) baseZoom = isMobile ? 45 : 90;
+    targetZoom.current = baseZoom;
+
+    const cam = state.camera;
+    cam.position.set(15, 15, 20); 
+    cam.zoom = THREE.MathUtils.lerp(cam.zoom, targetZoom.current, 4 * delta);
+    cam.updateProjectionMatrix();
+    inv();
+    invalidate();
   });
 
   return null;
@@ -1400,7 +1572,7 @@ const ProjectFrame = React.memo(function ProjectFrame({
   );
 });
 
-function SceneGroup({ projects, activeId, setActiveId }) {
+function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosChange }) {
   const groupRef = useRef();
   const [playerPos, setPlayerPos] = useState(new THREE.Vector3(0, 0, 0));
   const [showHint, setShowHint] = useState(true);
@@ -1422,7 +1594,19 @@ function SceneGroup({ projects, activeId, setActiveId }) {
     if (activeId === null) {
       tX = -playerPos.x;
       tZ = -playerPos.z + 5;
-      tY = 0;
+      tY = -playerPos.y; // Seguir altura del dino
+      
+      // Rotate follow target to match view rotation
+      if (window.storyViewRotation) {
+        const angle = (window.storyViewRotation * Math.PI) / 180;
+        const s = Math.sin(angle);
+        const c = Math.cos(angle);
+        const nx = tX * c - tZ * s;
+        const nz = tX * s + tZ * c;
+        tX = nx;
+        tZ = nz;
+      }
+
       if (!isMobile) {
         tX += state.pointer.x * 2;
         tZ += state.pointer.y * 2;
@@ -1436,10 +1620,15 @@ function SceneGroup({ projects, activeId, setActiveId }) {
     groupRef.current.position.y = THREE.MathUtils.lerp(py, tY, 4 * delta);
     groupRef.current.position.z = THREE.MathUtils.lerp(pz, tZ, 4 * delta);
 
+    // Smoothly rotate the group - SIN rotacion interior, solo viewRotation
+    const baseRot = (window.storyViewRotation * Math.PI) / 180;
+    groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, baseRot, 5 * delta);
+
     const moved =
       Math.abs(groupRef.current.position.x - px) > 0.001 ||
       Math.abs(groupRef.current.position.y - py) > 0.001 ||
-      Math.abs(groupRef.current.position.z - pz) > 0.001;
+      Math.abs(groupRef.current.position.z - pz) > 0.001 ||
+      Math.abs(groupRef.current.rotation.y - baseRot) > 0.001;
     if (moved) invalidate();
   });
 
@@ -1454,7 +1643,16 @@ function SceneGroup({ projects, activeId, setActiveId }) {
           setActiveId={setActiveId}
         />
       ))}
-      <PlayerDino url="dinoCharacter.png" scale={1.5} onPositionUpdate={setPlayerPos} />
+      <PlayerDino 
+        url="dinoCharacter.png" 
+        scale={1.5} 
+        onPositionUpdate={(p) => {
+          setPlayerPos(p);
+          onPlayerPosChange?.(p);
+        }} 
+        teleportPos={teleportPos} 
+      />
+      <CameraController activeId={activeId} playerPos={playerPos} />
       {showHint && (
         <Html position={[0, 2, 0]} center>
           <div style={{
@@ -1472,6 +1670,7 @@ function SceneGroup({ projects, activeId, setActiveId }) {
       )}
       <WalkingSprite url="botdia.png" scale={1.8} />
       <Scenery playerPos={playerPos} />
+      
       <Particles />
 
       <mesh position={[43, -0.05, -2]} receiveShadow>
@@ -1504,6 +1703,22 @@ function SceneGroup({ projects, activeId, setActiveId }) {
 // ── MAIN EXPORT ───────────────────────────────────────────────────────────────
 export default function Story3D({ projects, active, onClose }) {
   const [activeId, setActiveId] = useState(null);
+  const [viewRotation, setViewRotation] = useState(0);
+
+  const [teleportPos, setTeleportPos] = useState(null);
+
+  // Expose to window for simpler cross-component access in this specific architecture
+  useEffect(() => {
+    window.storyViewRotation = viewRotation;
+  }, [viewRotation]);
+
+  useEffect(() => {
+    if (teleportPos) {
+      // Reset teleport flag after one frame
+      const timer = setTimeout(() => setTeleportPos(null), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [teleportPos]);
 
   // Memoize state setter for ProjectFrame
   const handleSetActiveId = useCallback((id) => setActiveId(id), []);
@@ -1511,6 +1726,10 @@ export default function Story3D({ projects, active, onClose }) {
   useEffect(() => {
     if (!active) setActiveId(null);
   }, [active]);
+
+  const [playerPos, setPlayerPos] = useState(new THREE.Vector3(0, 0, 0));
+  const isInside = playerPos.x > -12.2 && playerPos.x < 26.2 && playerPos.z < -12.3 && playerPos.z > -56.2;
+  const isGroundFloor = playerPos.y < 2;
 
   if (!active) return null;
 
@@ -1569,6 +1788,86 @@ export default function Story3D({ projects, active, onClose }) {
           </svg>
         </button>
 
+        {/* Rotate Camera */}
+        <button
+          onClick={() => setViewRotation(r => (r + 90) % 360)}
+          style={{
+            position: "absolute",
+            top: "clamp(16px,4vw,32px)",
+            right: "clamp(80px,10vw,100px)",
+            zIndex: 70,
+            background: "rgba(0,0,0,0.05)",
+            border: "none",
+            width: 48,
+            height: 48,
+            borderRadius: "50%",
+            color: "#1a1814",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backdropFilter: "blur(8px)",
+          }}
+          title="Rotar Vista"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 4v6h-6" />
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+          </svg>
+        </button>
+
+        {/* Botones de Navegación Interior - Siempre visibles para edición */}
+        <div style={{
+            position: "absolute",
+            bottom: "clamp(80px, 12vw, 100px)",
+            right: "clamp(16px, 4vw, 32px)",
+            zIndex: 70,
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px"
+          }}>
+            <button
+              onClick={() => setTeleportPos(new THREE.Vector3(playerPos.x, 0.1, -15))}
+              style={{
+                padding: "12px 24px",
+                background: isGroundFloor ? "rgba(200,160,80,0.9)" : "rgba(255,255,255,0.9)",
+                border: "1px solid rgba(0,0,0,0.1)",
+                borderRadius: "30px",
+                color: isGroundFloor ? "white" : "#1a1814",
+                fontSize: "12px",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                cursor: "pointer",
+                boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+                backdropFilter: "blur(8px)",
+                transition: "all 0.3s ease",
+              }}
+            >
+              Ver Planta Baja
+            </button>
+            <button
+              onClick={() => setTeleportPos(new THREE.Vector3(11.55, 3.4, -17.65))}
+              style={{
+                padding: "12px 24px",
+                background: !isGroundFloor ? "rgba(200,160,80,0.9)" : "rgba(255,255,255,0.9)",
+                border: "1px solid rgba(0,0,0,0.1)",
+                borderRadius: "30px",
+                color: !isGroundFloor ? "white" : "#1a1814",
+                fontSize: "12px",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                cursor: "pointer",
+                boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+                backdropFilter: "blur(8px)",
+                transition: "all 0.3s ease",
+              }}
+            >
+              Ver Segundo Piso
+            </button>
+          </div>
+
         {/* Hint */}
         <div
           style={{
@@ -1610,11 +1909,12 @@ export default function Story3D({ projects, active, onClose }) {
             color="#fffaf0"
           />
 
-          <CameraController activeId={activeId} />
           <SceneGroup
             projects={projects}
             activeId={activeId}
             setActiveId={handleSetActiveId}
+            teleportPos={teleportPos}
+            onPlayerPosChange={setPlayerPos}
           />
           <Preload all />
         </Canvas>

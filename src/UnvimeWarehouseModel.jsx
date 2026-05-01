@@ -106,7 +106,6 @@ export function WarehouseBuilding({ interiorMode = false }) {
           <meshStandardMaterial color="#e5e3dc" roughness={0.8} />
         </mesh>
       )}
-
       {!interiorMode && (
         <mesh position={[4.5, 7, 8]} castShadow receiveShadow>
           <boxGeometry args={[1.5, 14, 1]} />
@@ -369,6 +368,11 @@ export function WarehouseBuilding({ interiorMode = false }) {
               <meshStandardMaterial color="#5a6470" roughness={0.65} />
             </mesh>
           ))}
+          {/* Pared interior al lado de las últimas mesas */}
+          <mesh position={[10, 3, 15]}>
+            <boxGeometry args={[40, 6, 0.5]} />
+            <meshStandardMaterial color="#f0efe9" roughness={0.9} />
+          </mesh>
         </group>
       )}
     </group>

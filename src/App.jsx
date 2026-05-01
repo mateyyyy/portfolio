@@ -1616,6 +1616,49 @@ function HeroBoot({ onStartStory }) {
   );
 }
 
+// ─── FEATURED 3D SECTION ──────────────────────────────────────────────────────
+function Featured3D({ onStartStory }) {
+  return (
+    <section
+      className="reveal featured-3d-section"
+      style={{
+        maxWidth: 1200,
+        margin: "80px auto",
+        padding: "0 32px",
+      }}
+    >
+      <div className="featured-3d-container" onClick={onStartStory}>
+        <div className="featured-3d-content">
+          <div className="featured-3d-tag">Experiencia Inmersiva</div>
+          <h2 className="featured-3d-title">Explora mi Portfolio en 3D</h2>
+          <p className="featured-3d-desc">
+            Interactúa con mis proyectos en un entorno tridimensional. Camina por el galpón, descubre detalles y vive una experiencia única.
+          </p>
+          <button className="featured-3d-btn">
+            Entrar al Mundo 3D
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+        <div className="featured-3d-image-wrap">
+          <img src="public/preview3d.png" alt="3D Portfolio Preview" className="featured-3d-img" />
+          <div className="featured-3d-overlay" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── PROJECT GRID ──────────────────────────────────────────────────
 function ProjectGrid({ projects, onOpenMedia }) {
   return (
@@ -1696,6 +1739,8 @@ function App() {
       <main style={{ minHeight: "100vh" }}>
         {/* HERO */}
         <HeroBoot onStartStory={() => setStoryActive(true)} />
+
+        <Featured3D onStartStory={() => setStoryActive(true)} />
 
         {storyUnlocked && (
           <>
