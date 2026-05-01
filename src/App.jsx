@@ -1651,7 +1651,7 @@ function Featured3D({ onStartStory }) {
           </button>
         </div>
         <div className="featured-3d-image-wrap">
-          <img src="/preview3d.png" alt="3D Portfolio Preview" className="featured-3d-img" />
+          <img src={import.meta.env.BASE_URL + "preview3d.png"} alt="3D Portfolio Preview" className="featured-3d-img" />
           <div className="featured-3d-overlay" />
         </div>
       </div>
