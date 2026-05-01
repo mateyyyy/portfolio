@@ -293,7 +293,7 @@ function WarehouseBuilding({ playerPos }) {
         <group position={[16.4, 6, -3]} visible={interiorOpacity > 0.01 && isOnUpperFloor}>
           {/* Piso */}
           <mesh receiveShadow>
-            <boxGeometry args={[60, 0.2, 13]} />
+            <boxGeometry args={[66, 0.2, 13]} />
             <meshStandardMaterial color="#d3d0c8" roughness={0.85} transparent opacity={interiorOpacity} />
           </mesh>
 
@@ -324,6 +324,11 @@ function WarehouseBuilding({ playerPos }) {
               </group>
             ))}
           </group>
+          {/*Baranda*/}
+          <mesh position={[-17, 0.7, -6.5]} rotation={[0,Math.PI/2,0]}>
+            <boxGeometry args={[0.1, 1.4, 28]} />
+            <meshStandardMaterial color="#6f6b64" transparent opacity={interiorOpacity} />
+          </mesh>
 
          
 
@@ -349,10 +354,10 @@ function WarehouseBuilding({ playerPos }) {
           <Chair position={[-9.6, 0, -4]} rotation={[0, -Math.PI/2, 0]} />
         </group>
        
-        <Stairs position={[-18, 0, -6.5]} rotation={[0, -Math.PI, 0]} steps={6}/>
-        <Stairs position={[-15, 3, -3.5]} rotation={[0,0, 0]} steps={7}/>
+        <Stairs position={[-21, 0, -6.5]} rotation={[0, -Math.PI, 0]} steps={6}/>
+        <Stairs position={[-18, 3, -3.5]} rotation={[0,0, 0]} steps={7}/>
         {/*Entre piso escalera*/}
-         <group position={[-16.1, 3.075, 0]} visible={interiorOpacity > 0.01}>
+         <group position={[-19.1, 3.075, 0]} visible={interiorOpacity > 0.01}>
           <mesh receiveShadow>
             <boxGeometry args={[6, 0.25, 5]} />
             <meshStandardMaterial color="#d3d0c8" roughness={0.85} transparent opacity={interiorOpacity} />
@@ -389,14 +394,14 @@ function WarehouseBuilding({ playerPos }) {
         </mesh>
 
         {/* Entrepiso / Piso intermedio */}
-        <group position={[-18.8, 6.15, -25]} visible={interiorOpacity > 0.01}>
+        <group position={[-18.8, 5.9, -31]} visible={interiorOpacity > 0.01}>
           <mesh receiveShadow>
-            <boxGeometry args={[8, 0.25, 24]} />
+            <boxGeometry args={[8, 0.25,47]} />
             <meshStandardMaterial color="#d3d0c8" roughness={0.85} transparent opacity={interiorOpacity} />
           </mesh>
           {/* Baranda del entrepiso */}
           <mesh position={[4.05, 0.7, 0]}>
-            <boxGeometry args={[0.1, 1.4, 24]} />
+            <boxGeometry args={[0.1, 1.4, 43]} />
             <meshStandardMaterial color="#6f6b64" transparent opacity={interiorOpacity} />
           </mesh>
         </group>
