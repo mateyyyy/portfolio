@@ -664,6 +664,22 @@ function WarehouseBuilding({ playerPos }) {
 
       </group>{/* fin visible={!isInside} - ventanas frontales */}
 
+      {/* Soporte superior de la entrada (Dintel) */}
+      <mesh position={[-1.375, 13.5, 6.75]} visible={!isInside}>
+        <boxGeometry args={[13.25, 2.5, 3.5]} />
+        <meshStandardMaterial color="#e5e3dc" roughness={0.8} />
+      </mesh>
+      
+      {/* Pilares laterales entrada */}
+      <mesh position={[-6, 7, 6.75]} visible={!isInside}>
+        <boxGeometry args={[4, 14, 3.5]} />
+        <meshStandardMaterial color="#e5e3dc" roughness={0.8} />
+      </mesh>
+      <mesh position={[4.5, 7, 8]} visible={!isInside}>
+        <boxGeometry args={[1.5, 14, 1]} />
+        <meshStandardMaterial color="#e5e3dc" roughness={0.8} />
+      </mesh>
+
       {/* Entrada despejada con dos puertas de vidrio */}
       {[-2, 2].map((x, i) => (
         <group key={`entrance_door_${i}`} position={[x, 3, 5]}>
