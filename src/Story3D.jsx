@@ -262,7 +262,7 @@ function WarehouseBuilding({ playerPos }) {
       {isInside && (
         <mesh position={[11, 0.15, -25]} receiveShadow>
           <boxGeometry args={[70, 0.08, 60]} />
-          <meshStandardMaterial color="#2a2a2a" roughness={0.9} />
+          <meshStandardMaterial color="#444" roughness={0.9} />
         </mesh>
       )}
       <group>
@@ -280,7 +280,7 @@ function WarehouseBuilding({ playerPos }) {
         </mesh>
         <mesh position={[11, 0.1, -25]} receiveShadow>
           <boxGeometry args={[70, 0.2, 59]} />
-          <meshStandardMaterial color="#222" />
+          <meshStandardMaterial color="#3a3a3a" />
         </mesh>
         <mesh position={[11, 0.25, 4.75]} visible={!isInside}>
           <boxGeometry args={[70.5, 0.5, 0.5]} />
@@ -525,7 +525,7 @@ function WarehouseBuilding({ playerPos }) {
               </mesh>
             ))}
             {/* Pared trasera de las aulas (Pared del galpón) */}
-            <mesh position={[-8, 0, 0]}>
+            <mesh position={[-8.2, 0, 0]}>
               <boxGeometry args={[0.2, 4, 40]} />
               <meshStandardMaterial color="#f7f5f0" roughness={0.9} transparent opacity={interiorOpacity} />
             </mesh>
@@ -549,13 +549,41 @@ function WarehouseBuilding({ playerPos }) {
         {/* Pared detallada debajo del entrepiso (Oficinas) */}
         <group position={[-14.9, 3, -32]} visible={interiorOpacity > 0.01}>
           {/* Pared Principal */}
-          <mesh receiveShadow>
-            <boxGeometry args={[0.2, 6, 45]} />
+          <mesh receiveShadow position={[0, 0, -6.5]}>
+            <boxGeometry args={[0.2, 6, 33]} />
+            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+          </mesh>
+          {/* Pared con Ventana Grande */}
+          <group position={[0, 0, 17.5]}>
+            {/* Parte inferior sólida */}
+            <mesh position={[0, -2.25, 0]}>
+              <boxGeometry args={[0.2, 1.5, 10]} />
+              <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+            </mesh>
+            {/* Parte superior sólida */}
+            <mesh position={[0, 2.25, 0]}>
+              <boxGeometry args={[0.2, 1.5, 10]} />
+              <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+            </mesh>
+            {/* Pared Lateral Pasillo */}
+          <mesh receiveShadow rotation={[0, Math.PI/2, 0]} position={[-4.9, 0, -4.5]}>
+            <boxGeometry args={[1, 6, 10]} />
+            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+          </mesh>
+          <mesh receiveShadow rotation={[0, Math.PI/2, 0]} position={[-4.9, 0, -7.5]}>
+            <boxGeometry args={[0.2, 6, 10]} />
+            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+          </mesh>
+
+          </group>
+          {/* Pared Lateral */}
+          <mesh receiveShadow rotation={[0, Math.PI/2, 0]} position={[-4.9, 0, 22.5]}>
+            <boxGeometry args={[2, 6, 10]} />
             <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
           </mesh>
           
           {/* Puertas (2 unidades) */}
-          {[-7, 7].map((z, i) => (
+          {[-15,-7, 1, 8].map((z, i) => (
             <group key={`office_door_${i}`} position={[0.1, -1.75, z]}>
               {/* Marco/Puerta madera */}
               <mesh>
@@ -1279,7 +1307,7 @@ function Scenery({ playerPos }) {
         position={[20.2, 0.1, -12.35]}
       />  
 
-      <LowPolyTree position={[-11, 0, -2]} scale={1.1} isNewton={true} />
+      <LowPolyTree position={[-15, 0, -2]} scale={1.1} isNewton={true} />
       <LandingSteps position={[6.4, 0, -12.2]} />
       <ConcreteBench position={[-9, 0, -11.5]} />
       <BicycleRack position={[15, 0, 7]} rotation={[0, 0, 0]} />
