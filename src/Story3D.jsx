@@ -389,6 +389,7 @@ function WarehouseBuilding({ playerPos }) {
             <boxGeometry args={[35, 4, 0.2]} />
             <meshStandardMaterial color="#fcfaf2" roughness={0.9} transparent opacity={interiorOpacity} />
           </mesh>
+          
           {/*Sillas de auditorio*/}
           
           {Array.from({ length: 9 }).map((_, i) => {
@@ -562,6 +563,11 @@ function WarehouseBuilding({ playerPos }) {
               <boxGeometry args={[0.2, 4, 40]} />
               <meshStandardMaterial color="#f7f5f0" roughness={0.9} transparent opacity={interiorOpacity} />
             </mesh>
+            {/* Techo de Aulas */}
+            <mesh position={[-4.1, 2, 0]}>
+              <boxGeometry args={[8.5, 0.1, 40]} />
+              <meshStandardMaterial color="#f7f5f0" roughness={0.9} transparent opacity={interiorOpacity} />
+            </mesh>
             {/* Paredes laterales (divisorias) */}
             {[-20, -14, -5, 4, 13, 20 ].map((z, i) => (
               <mesh key={`class_divider_${i}`} position={[-4.1, 0, z]}>
@@ -647,11 +653,18 @@ function WarehouseBuilding({ playerPos }) {
             <group position={[0, 0, -28]}>
               {/* --- Primera pared fondo Corregida (1 puerta central, 2 ventanas laterales) --- */}
               <group position={[-14.75, 0, 0]}>
-                {/* Dintel superior (continuo) */}
+                {/* Dintel superior original */}
                 <mesh position={[0, 2, 0]}>
                   <boxGeometry args={[20, 2, 0.5]} />
                   <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
                 </mesh>
+
+                {/* Extensión superior (Pared separada) */}
+                <mesh position={[15.7, 6, -4]}>
+                  <boxGeometry args={[51, 6, 9]} />
+                  <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+                </mesh>
+
 
                 {/* Pilares principales que definen los huecos */}
                 {[ -8.5, -2.25, 2.25, 8.5 ].map((x, i) => (
@@ -780,21 +793,66 @@ function WarehouseBuilding({ playerPos }) {
                 </group>
               </group>
 
-              {/*Segunda pared fondo */}
+              {/*Segunda pared fondo - Dividida en dos */}
               <mesh position={[5.5, 0, 0]}>
                 <boxGeometry args={[7, 6, 0.5]} />
                 <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
               </mesh>
-              {/*Tercera pared fondo */}
+              <mesh position={[5.5, 6, 0]}>
+                <boxGeometry args={[7, 6, 0.5]} />
+                <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+              </mesh>
+
+              {/*Tercera pared fondo - Dividida en dos */}
               <mesh position={[20.5, 0, 0]}>
-                <boxGeometry args={[9, 5.9, 0.5]} />
+                <boxGeometry args={[9, 6, 0.5]} />
                 <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
               </mesh>
-               {/*VIGA SUPERIOR Y TECHO*/}
-              <mesh position={[0.9, 2.8, -4]}>
-                <boxGeometry args={[51, 0.5, 9]} />
+              <mesh position={[20.5, 6, 0]}>
+                <boxGeometry args={[9, 6, 0.5]} />
                 <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
               </mesh>
+               {/* Extensión superior (Pared separada) */}
+              <group position={[15.7, 6, -4]}>
+                <mesh>
+                  <boxGeometry args={[51, 6, 9]} />
+                  <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+                </mesh>
+                
+                {/* Cartel BAÑOS */}
+                <group position={[-16, -1, 4.51]}>
+                  <mesh>
+                    <boxGeometry args={[3, 1.2, 0.1]} />
+                    <meshStandardMaterial color="#2a2f35" />
+                  </mesh>
+                  <Text
+                    position={[0, 0, 0.06]}
+                    fontSize={0.35}
+                    color="white"
+                    anchorX="center"
+                    anchorY="middle"
+                  >
+                    BAÑOS
+                  </Text>
+                </group>
+
+                {/* Cartel LABORATORIO */}
+                <group position={[-2, -1, 4.51]}>
+                  <mesh>
+                    <boxGeometry args={[5, 1.2, 0.1]} />
+                    <meshStandardMaterial color="#2a2f35" />
+                  </mesh>
+                  <Text
+                    position={[0, 0, 0.06]}
+                    fontSize={0.35}
+                    color="white"
+                    anchorX="center"
+                    anchorY="middle"
+                  >
+                    LABORATORIO
+                  </Text>
+                </group>
+              </group>
             </group> 
             <mesh position={[-24.5, 0, -32]} rotation={[0, Math.PI/2, 0]}>
               <boxGeometry args={[8, 6, 0.2]} />
@@ -892,6 +950,11 @@ function WarehouseBuilding({ playerPos }) {
           <group position={[-15.5, 8, -64.625]}>
             <mesh>
               <boxGeometry args={[0.2, 4, 20.25]} />
+              <meshStandardMaterial color="#f7f5f0" roughness={0.9} transparent opacity={interiorOpacity} />
+            </mesh>
+            {/* Techo de Aulas Extensión */}
+            <mesh position={[-4.1, 2, 0]}>
+              <boxGeometry args={[8.5, 0.1, 20.25]} />
               <meshStandardMaterial color="#f7f5f0" roughness={0.9} transparent opacity={interiorOpacity} />
             </mesh>
             {/* Divisorias adicionales */}
