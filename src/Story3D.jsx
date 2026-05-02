@@ -866,14 +866,14 @@ function WarehouseBuilding({ playerPos }) {
                 <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
               </mesh>
                {/* Extensión superior (Pared separada) */}
-              <group position={[15.7, 6, -4]}>
+              <group position={[0, 6, -4]}>
                 <mesh>
-                  <boxGeometry args={[51, 6, 9]} />
+                  <boxGeometry args={[40, 6, 9]} />
                   <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
                 </mesh>
                 
                 {/* Cartel BAÑOS */}
-                <group position={[-16, -1, 4.51]}>
+                <group position={[-0.5, -1, 4.51]}>
                   <mesh>
                     <boxGeometry args={[3, 1.2, 0.1]} />
                     <meshStandardMaterial color="#2a2f35" />
@@ -890,7 +890,7 @@ function WarehouseBuilding({ playerPos }) {
                 </group>
 
                 {/* Cartel LABORATORIO */}
-                <group position={[-2, -1, 4.51]}>
+                <group position={[14, -1, 4.51]}>
                   <mesh>
                     <boxGeometry args={[5, 1.2, 0.1]} />
                     <meshStandardMaterial color="#2a2f35" />
@@ -1785,193 +1785,88 @@ function Scenery({ playerPos }) {
   );
 }
 
-// --- Characters ---
+// --- Mobile Controls ---
 
-function Bot3D({ scale = 1, isWalking = false, facingRight = true }) {
-  return (
-    <group scale={[scale, scale, scale]}>
-      {/* Piernas */}
-      <mesh position={[-0.2, 0.4, 0]}>
-        <cylinderGeometry args={[0.1, 0.1, 0.8, 8]} />
-        <meshStandardMaterial color="#ff7663" />
-      </mesh>
-      <mesh position={[0.2, 0.4, 0]}>
-        <cylinderGeometry args={[0.1, 0.1, 0.8, 8]} />
-        <meshStandardMaterial color="#ff7663" />
-      </mesh>
-      {/* Pies */}
-      <mesh position={[-0.2, 0.05, 0]}>
-        <sphereGeometry args={[0.15, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshStandardMaterial color="#fcd1cc" />
-      </mesh>
-      <mesh position={[0.2, 0.05, 0]}>
-        <sphereGeometry args={[0.15, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshStandardMaterial color="#fcd1cc" />
-      </mesh>
+function Joystick({ onChange }) {
+  const [active, setActive] = useState(false);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const containerRef = useRef();
 
-      {/* Cuerpo */}
-      <mesh position={[0, 1.2, 0]}>
-        <boxGeometry args={[0.8, 0.8, 0.4]} />
-        <meshStandardMaterial color="#ff7663" />
-      </mesh>
-      {/* Logo % (simplificado como un detalle blanco) */}
-      <mesh position={[0, 1.2, 0.21]}>
-        <boxGeometry args={[0.4, 0.4, 0.01]} />
-        <meshStandardMaterial color="#ffffff" />
-      </mesh>
-
-      {/* Hombros */}
-      <mesh position={[-0.45, 1.4, 0]}>
-        <sphereGeometry args={[0.12, 16, 16]} />
-        <meshStandardMaterial color="#fcd1cc" />
-      </mesh>
-      <mesh position={[0.45, 1.4, 0]}>
-        <sphereGeometry args={[0.12, 16, 16]} />
-        <meshStandardMaterial color="#fcd1cc" />
-      </mesh>
-
-      {/* Brazos */}
-      <mesh position={[-0.55, 1.1, 0]} rotation={[0, 0, 0.2]}>
-        <cylinderGeometry args={[0.08, 0.08, 0.6, 8]} />
-        <meshStandardMaterial color="#ff7663" />
-      </mesh>
-      <mesh position={[0.55, 1.1, 0]} rotation={[0, 0, -0.2]}>
-        <cylinderGeometry args={[0.08, 0.08, 0.6, 8]} />
-        <meshStandardMaterial color="#ff7663" />
-      </mesh>
-      {/* Manos */}
-      <mesh position={[-0.65, 0.8, 0]}>
-        <sphereGeometry args={[0.1, 16, 16]} />
-        <meshStandardMaterial color="#fcd1cc" />
-      </mesh>
-      <mesh position={[0.65, 0.8, 0]}>
-        <sphereGeometry args={[0.1, 16, 16]} />
-        <meshStandardMaterial color="#fcd1cc" />
-      </mesh>
-
-      {/* Cabeza (Forma pixelada simulada con cajas) */}
-      <group position={[0, 2.0, 0]}>
-        {/* Base cabeza */}
-        <mesh>
-          <boxGeometry args={[1, 0.8, 0.5]} />
-          <meshStandardMaterial color="#fcd1cc" />
-        </mesh>
-        {/* Cara roja */}
-        <mesh position={[0, 0.1, 0.26]}>
-          <boxGeometry args={[0.7, 0.4, 0.05]} />
-          <meshStandardMaterial color="#ff7663" />
-        </mesh>
-        {/* Ojos */}
-        <mesh position={[-0.2, 0.1, 0.3]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.08, 0.08, 0.02, 16]} />
-          <meshStandardMaterial color="#6ec9e3" emissive="#6ec9e3" emissiveIntensity={0.5} />
-        </mesh>
-        <mesh position={[0.2, 0.1, 0.3]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.08, 0.08, 0.02, 16]} />
-          <meshStandardMaterial color="#6ec9e3" emissive="#6ec9e3" emissiveIntensity={0.5} />
-        </mesh>
-        {/* Antena base */}
-        <mesh position={[0, 0.45, 0]}>
-          <sphereGeometry args={[0.15, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-          <meshStandardMaterial color="#fcd1cc" />
-        </mesh>
-        {/* Antenas hilos */}
-        <mesh position={[-0.15, 0.7, 0]} rotation={[0, 0, 0.5]}>
-          <cylinderGeometry args={[0.01, 0.01, 0.4, 8]} />
-          <meshStandardMaterial color="#888" />
-        </mesh>
-        <mesh position={[0.15, 0.7, 0]} rotation={[0, 0, -0.5]}>
-          <cylinderGeometry args={[0.01, 0.01, 0.4, 8]} />
-          <meshStandardMaterial color="#888" />
-        </mesh>
-      </group>
-    </group>
-  );
-}
-
-function WalkingSprite({ url, scale = 1.5 }) {
-  const ref = useRef();
-  const groupRef = useRef();
-  const dir = useMemo(() => new THREE.Vector3(), []);
-  const imgUrl = useMemo(() => import.meta.env.BASE_URL + url, [url]);
-
-  const stateRef = useRef({
-    pos: new THREE.Vector3(
-      (Math.random() - 0.5) * 20,
-      0,
-      (Math.random() - 0.5) * 20,
-    ),
-    target: new THREE.Vector3(
-      (Math.random() - 0.5) * 20,
-      0,
-      (Math.random() - 0.5) * 20,
-    ),
-    isWalking: true,
-    waitTime: 0,
-    speed: 2 + Math.random() * 2,
-    facingRight: true,
-  });
-
-  useFrame((state, delta) => {
-    if (!ref.current || !groupRef.current) return;
-    const s = stateRef.current;
-
-    if (s.isWalking) {
-      dir.copy(s.target).sub(s.pos);
-      const dist = dir.length();
-      if (dist < 0.1) {
-        s.isWalking = false;
-        s.waitTime = 1 + Math.random() * 4;
-      } else {
-        dir.normalize();
-        s.pos.add(dir.multiplyScalar(s.speed * delta));
-        if (dir.x > 0) s.facingRight = true;
-        else if (dir.x < 0) s.facingRight = false;
-        const time = state.clock.getElapsedTime();
-        ref.current.position.y =
-          Math.abs(Math.sin(time * 15)) * 0.1 + scale * 0.2;
-        ref.current.rotation.z = Math.sin(time * 15) * 0.05;
-      }
-    } else {
-      s.waitTime -= delta;
-      const time = state.clock.getElapsedTime();
-      ref.current.position.y =
-        Math.sin(time * 3) * 0.05 + scale * 0.2;
-      ref.current.rotation.z = 0;
-      if (s.waitTime <= 0) {
-        s.isWalking = true;
-        s.target.set((Math.random() - 0.5) * 30, 0, (Math.random() - 0.5) * 30);
-        s.speed = 1.5 + Math.random() * 2.5;
-      }
+  const handleMove = useCallback((e) => {
+    if (!active) return;
+    const touch = e.touches ? e.touches[0] : e;
+    const rect = containerRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    let dx = touch.clientX - centerX;
+    let dy = touch.clientY - centerY;
+    
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const maxDist = rect.width / 2;
+    
+    if (dist > maxDist) {
+      dx *= maxDist / dist;
+      dy *= maxDist / dist;
     }
+    
+    setPos({ x: dx, y: dy });
+    // Map screen Y to 3D Z
+    onChange({ x: dx / maxDist, z: dy / maxDist });
+  }, [active, onChange]);
 
-    groupRef.current.position.copy(s.pos);
-    ref.current.scale.x = s.facingRight ? scale : -scale;
-    ref.current.scale.y = scale;
-    invalidate();
-  });
+  const handleEnd = useCallback(() => {
+    setActive(false);
+    setPos({ x: 0, y: 0 });
+    onChange({ x: 0, z: 0 });
+  }, [onChange]);
 
-  const s = stateRef.current;
   return (
-    <group ref={groupRef}>
-      <group ref={ref} rotation={[0, s.facingRight ? Math.PI / 2 : -Math.PI / 2, 0]}>
-        <Bot3D scale={scale} isWalking={s.isWalking} />
-      </group>
-    </group>
+    <div 
+      ref={containerRef}
+      style={{
+        position: "absolute",
+        bottom: "clamp(30px, 10vw, 60px)",
+        left: "clamp(30px, 10vw, 60px)",
+        width: "100px",
+        height: "100px",
+        background: "rgba(0,0,0,0.05)",
+        borderRadius: "50%",
+        touchAction: "none",
+        zIndex: 100,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        border: "2px solid rgba(0,0,0,0.1)",
+        backdropFilter: "blur(4px)"
+      }}
+      onTouchStart={(e) => { setActive(true); }}
+      onTouchMove={handleMove}
+      onTouchEnd={handleEnd}
+      onTouchCancel={handleEnd}
+    >
+      <div style={{
+        width: "40px",
+        height: "40px",
+        background: active ? "rgba(200,160,80,0.9)" : "rgba(0,0,0,0.2)",
+        borderRadius: "50%",
+        transform: `translate(${pos.x}px, ${pos.y}px)`,
+        boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+        transition: active ? "none" : "transform 0.2s ease-out"
+      }} />
+    </div>
   );
 }
 
-function PlayerDino({ url, scale = 1.5, onPositionUpdate, teleportPos }) {
-  const ref = useRef();
-  const groupRef = useRef();
+// --- Movement Controller (Direct POV) ---
+
+function MovementController({ onPositionUpdate, teleportPos, joystickRef }) {
   const [, getKeys] = useKeyboardControls();
   const pos = useMemo(() => new THREE.Vector3(0, 0, 0), []);
   const velocity = useMemo(() => new THREE.Vector3(), []);
-  const speed = 10;
-  const lastRot = useRef(0);
+  const speed = 12;
 
   useFrame((state, delta) => {
-    if (!ref.current || !groupRef.current) return;
     const { forward, backward, left, right } = getKeys();
 
     velocity.set(0, 0, 0);
@@ -1980,7 +1875,13 @@ function PlayerDino({ url, scale = 1.5, onPositionUpdate, teleportPos }) {
     if (left) velocity.x -= 1;
     if (right) velocity.x += 1;
 
-    // Teletransporte
+    // Joystick input
+    if (joystickRef?.current) {
+      velocity.x += joystickRef.current.x;
+      velocity.z += joystickRef.current.z;
+    }
+
+    // Teleportation logic
     if (teleportPos) {
       pos.copy(teleportPos);
     }
@@ -1988,59 +1889,16 @@ function PlayerDino({ url, scale = 1.5, onPositionUpdate, teleportPos }) {
     if (velocity.length() > 0) {
       velocity.normalize().multiplyScalar(speed * delta);
       pos.add(velocity);
-
-      // 4-way rotation
-      let targetRot = lastRot.current;
-      if (Math.abs(velocity.x) > 0.1 || Math.abs(velocity.z) > 0.1) {
-        targetRot = Math.atan2(velocity.x, velocity.z);
-        lastRot.current = targetRot;
-      }
-      ref.current.rotation.y = targetRot;
-      const time = state.clock.getElapsedTime();
-      ref.current.position.y = Math.abs(Math.sin(time * 15)) * 0.1 + scale * 0.2;
-      ref.current.rotation.z = Math.sin(time * 15) * 0.05;
-    } else {
-      const time = state.clock.getElapsedTime();
-      ref.current.position.y = Math.sin(time * 3) * 0.05 + scale * 0.2;
-      ref.current.rotation.z = 0;
     }
 
-    const isInside = pos.x > -12.2 && pos.x < 26.2 && pos.z < -12.3 && pos.z > -76.2;
-    
-    // Cálculo de altura (Y) - Simplificado: solo pisos, no escaleras auto
-    let targetY = 0;
-    
-    // Entrepiso oficinas
-    if (pos.x > -22.8 && pos.x < -14.8 && pos.z < -13 && pos.z > -37) {
-      targetY = 6;
-    }
-
-    // Entrepiso cafetería (Ajustado a local posZ=-3, height=6, scale=0.55)
-    // World Z = -16 + (-3 * 0.55) = -17.65
-    // World Y = 6 * 0.55 = 3.3
-    if (pos.x > -12 && pos.x < 26 && pos.z < -5 && pos.z > -30) {
-      targetY = 6 * 0.55; // 3.3
-    }
-
-    if (pos.y < 2.5 && targetY > 0) {
-       // Si está en el suelo y entra en zona de entrepiso, no sube solo (necesita botón)
-    } else {
-       pos.y = THREE.MathUtils.lerp(pos.y, targetY, 5 * delta);
-    }
-
-    groupRef.current.position.copy(pos);
     onPositionUpdate?.(pos.clone());
     invalidate();
   });
 
-  return (
-    <group ref={groupRef} visible={false}>
-      <group ref={ref}>
-        <Bot3D scale={scale} isWalking={velocity.length() > 0.1} />
-      </group>
-    </group>
-  );
+  return null;
 }
+
+
 
 // ── CAMERA ZOOM via useThree (works with frameloop="demand") ──────────────────
 function CameraController({ activeId, playerPos }) {
@@ -2305,7 +2163,7 @@ const ProjectFrame = React.memo(function ProjectFrame({
   );
 });
 
-function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosChange }) {
+function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosChange, joystickRef }) {
   const groupRef = useRef();
   const [playerPos, setPlayerPos] = useState(new THREE.Vector3(0, 0, 0));
   const [showHint, setShowHint] = useState(true);
@@ -2362,14 +2220,13 @@ function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosC
           setActiveId={setActiveId}
         />
       ))}
-      <PlayerDino 
-        url="dinoCharacter.png" 
-        scale={0.7} 
+      <MovementController 
         onPositionUpdate={(p) => {
           setPlayerPos(p);
           onPlayerPosChange?.(p);
         }} 
         teleportPos={teleportPos} 
+        joystickRef={joystickRef}
       />
       <CameraController activeId={activeId} playerPos={playerPos} />
       {showHint && (
@@ -2430,6 +2287,8 @@ export default function Story3D({ projects, active, onClose }) {
   const [viewRotation, setViewRotation] = useState(0);
 
   const [teleportPos, setTeleportPos] = useState(null);
+  const joystickRef = useRef({ x: 0, z: 0 });
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   // Expose to window for simpler cross-component access in this specific architecture
   useEffect(() => {
@@ -2458,7 +2317,6 @@ export default function Story3D({ projects, active, onClose }) {
   if (!active) return null;
 
   // Adaptive reflector resolution: lower on mobile/low-end
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   return (
     <KeyboardControls
@@ -2549,12 +2407,12 @@ export default function Story3D({ projects, active, onClose }) {
             <button
               onClick={() => setTeleportPos(new THREE.Vector3(11.55, 3.4, -17.65))}
               style={{
-                padding: "12px 24px",
+                padding: isMobile ? "10px 20px" : "12px 24px",
                 background: !isGroundFloor ? "rgba(200,160,80,0.9)" : "rgba(255,255,255,0.9)",
                 border: "1px solid rgba(0,0,0,0.1)",
                 borderRadius: "30px",
                 color: !isGroundFloor ? "white" : "#1a1814",
-                fontSize: "12px",
+                fontSize: isMobile ? "10px" : "12px",
                 fontWeight: 600,
                 textTransform: "uppercase",
                 letterSpacing: "0.1em",
@@ -2564,9 +2422,14 @@ export default function Story3D({ projects, active, onClose }) {
                 transition: "all 0.3s ease",
               }}
             >
-              Ver Segundo Piso
+              {isMobile ? "Piso 2" : "Ver Segundo Piso"}
             </button>
           </div>
+
+        {/* Joystick para móvil */}
+        {isMobile && activeId === null && (
+          <Joystick onChange={(dir) => { joystickRef.current = dir; }} />
+        )}
 
         {/* Hint */}
         <div
@@ -2586,7 +2449,7 @@ export default function Story3D({ projects, active, onClose }) {
           }}
         >
           {activeId === null
-            ? "Mover Dino: WASD / Flechas · Click en bloque para explorar"
+            ? (isMobile ? "Usa el joystick para explorar · Toca los proyectos" : "Explorar: WASD / Flechas · Click en bloque para ver detalles")
             : "Click fuera o en cerrar para volver"}
         </div>
 
@@ -2615,6 +2478,7 @@ export default function Story3D({ projects, active, onClose }) {
             setActiveId={handleSetActiveId}
             teleportPos={teleportPos}
             onPlayerPosChange={setPlayerPos}
+            joystickRef={joystickRef}
           />
           <Preload all />
         </Canvas>
