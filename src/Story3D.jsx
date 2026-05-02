@@ -167,14 +167,14 @@ function Speaker({ position, rotation = [0, 0, 0] }) {
         <group key={i} rotation={[0, angle, 0]}>
           <mesh position={[0, 0.4, 0.25]} rotation={[-Math.PI / 6, 0, 0]} castShadow>
             <cylinderGeometry args={[0.02, 0.02, 1, 8]} />
-            <meshStandardMaterial color="#111" metalness={0.8} />
+            <meshStandardMaterial color="#FFF" metalness={0.8} />
           </mesh>
         </group>
       ))}
       {/* Poste central */}
       <mesh position={[0, 1.2, 0]} castShadow>
         <cylinderGeometry args={[0.04, 0.04, 2.4, 8]} />
-        <meshStandardMaterial color="#111" metalness={0.8} />
+        <meshStandardMaterial color="#FFF" metalness={0.8} />
       </mesh>
       {/* Caja del parlante */}
       <group position={[0, 2.4, 0]}>
@@ -220,7 +220,7 @@ function RoundTable({ position }) {
 function WarehouseBuilding({ playerPos }) {
   const isInside = playerPos && 
     playerPos.x > -12.2 && playerPos.x < 26.2 && 
-    playerPos.z < -12.3 && playerPos.z > -56.2; 
+    playerPos.z < -12.3 && playerPos.z > -76.2; 
   
   const isOnUpperFloor = playerPos && playerPos.y > 3;
     
@@ -228,9 +228,9 @@ function WarehouseBuilding({ playerPos }) {
   const roofOpacity = 1;
   const interiorOpacity = isInside ? 1 : 0;
 
-  // Stable functions for InstancedRibs
-  const getRoofRibPosLeft = useMemo(() => (i) => [11 - 17.5, 14.6 - 0.58, -54.25 + i * 0.4], []);
-  const getRoofRibPosRight = useMemo(() => (i) => [11 + 17.5, 14.6 - 0.58, -54.25 + i * 0.4], []);
+  // Stable functions for InstancedRibs (Depth 80)
+  const getRoofRibPosLeft = useMemo(() => (i) => [11 - 17.5, 14.6 - 0.58, -74.25 + i * 0.4], []);
+  const getRoofRibPosRight = useMemo(() => (i) => [11 + 17.5, 14.6 - 0.58, -74.25 + i * 0.4], []);
   
   const getColRibPos = useMemo(() => (i) => {
     const xPos = -7.875 + i * 0.25;
@@ -258,28 +258,28 @@ function WarehouseBuilding({ playerPos }) {
           <ambientLight intensity={0.4} color="#fff0cc" />
         </>
       )}
-      {/* Piso interior hormigon oscuro */}
+      {/* Piso interior hormigon oscuro (Depth 80) */}
       {isInside && (
-        <mesh position={[11, 0.15, -25]} receiveShadow>
-          <boxGeometry args={[70, 0.08, 60]} />
+        <mesh position={[11, 0.15, -35]} receiveShadow>
+          <boxGeometry args={[70, 0.08, 80]} />
           <meshStandardMaterial color="#444" roughness={0.9} />
         </mesh>
       )}
       <group>
-        <mesh position={[11, 3, -54.75]}>
+        <mesh position={[11, 3, -74.75]}>
           <boxGeometry args={[70.5, 6, 0.5]} />
           <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
         </mesh>
-        <mesh position={[-24.25, 3, -25]}>
-          <boxGeometry args={[0.5, 6, 60]} />
+        <mesh position={[-24.25, 3, -35]}>
+          <boxGeometry args={[0.5, 6, 80]} />
           <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
         </mesh>
-        <mesh position={[46.25, 3, -25]}>
-          <boxGeometry args={[0.5, 6, 60]} />
+        <mesh position={[46.25, 3, -35]}>
+          <boxGeometry args={[0.5, 6, 80]} />
           <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
         </mesh>
-        <mesh position={[11, 0.1, -25]} receiveShadow>
-          <boxGeometry args={[70, 0.2, 59]} />
+        <mesh position={[11, 0.1, -35]} receiveShadow>
+          <boxGeometry args={[70, 0.2, 79]} />
           <meshStandardMaterial color="#3a3a3a" />
         </mesh>
         <mesh position={[11, 0.25, 4.75]} visible={!isInside}>
@@ -303,6 +303,51 @@ function WarehouseBuilding({ playerPos }) {
             <meshStandardMaterial color="#f0efe9" roughness={0.9} />
           </mesh>
         ))}
+
+        {/* Escenario Central (Flotante con soportes) */}
+        <group position={[38, 0, -40]} rotation={[0, Math.PI/2, 0]}>
+          {/* Plataforma */}
+          <mesh position={[0, 1.2, 0]} receiveShadow>
+            <boxGeometry args={[12, 0.4, 8]} />
+            <meshStandardMaterial color="#1a1a1a" roughness={0.7} metalness={0.2} />
+          </mesh>
+          {/* Soportes/Patas delgadas */}
+          {[
+            [-5.5, -3.5], [5.5, -3.5],
+            [-5.5, 3.5], [5.5, 3.5],
+            [0, -3.5], [0, 3.5]
+          ].map((pos, i) => (
+            <mesh key={`stage_leg_${i}`} position={[pos[0], 0.3, pos[1]]}>
+              <cylinderGeometry args={[0.08, 0.08, 0.6]} />
+              <meshStandardMaterial color="#555" metalness={0.8} roughness={0.2} />
+            </mesh>
+          ))}
+        <Speaker position={[-4, 1, -2.5]} rotation={[0, -Math.PI / 4, 0]} />
+        <Speaker position={[4, 1, -2.5]} rotation={[0, Math.PI / 4, 0]} />
+        </group>
+        
+
+        {/* Caja de Madera Grande al lado del escenario */}
+        <group position={[40, 0, -20]}>
+          <mesh castShadow receiveShadow position={[0, 1.5, 0]}>
+            <boxGeometry args={[3, 3, 4]} />
+            <meshStandardMaterial color="#8b5a2b" roughness={0.8} metalness={0.1} />
+            {/* Simulación de tablones con un wireframe sutil */}
+            <mesh>
+              <boxGeometry args={[3.01, 3.01, 4.01]} />
+              <meshBasicMaterial color="#5d3a1a" wireframe transparent opacity={0.2} />
+            </mesh>
+          </mesh>
+          {/* Refuerzos de la caja */}
+          {[
+            [1.5, 0], [-1.5, 0], [0, 1.5], [0, -1.5]
+          ].map((pos, i) => (
+            <mesh key={`crate_frame_${i}`} position={[pos[0] * 1.01, 1.5, pos[1] * 1.31]}>
+              <boxGeometry args={[pos[0] === 0 ? 3.1 : 0.1, 3.1, pos[1] === 0 ? 4.1 : 0.1]} />
+              <meshStandardMaterial color="#5d3a1a" roughness={1} />
+            </mesh>
+          ))}
+        </group>
         <RoundTable position={[14, 0.2, 3.2]} />
         <Chair position={[12, 0, 2.9]} rotation={[0, Math.PI/2, 0]} />
         <Chair position={[15.5, 0, 2.9]} rotation={[0, -Math.PI/2, 0]} />
@@ -582,21 +627,235 @@ function WarehouseBuilding({ playerPos }) {
             <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
           </mesh>
           
-          {/* Puertas (2 unidades) */}
-          {[-16,-8, 0, 8].map((z, i) => (
+          {/* Puertas (4 unidades) */}
+          {[-16, -8, 0, 8].map((z, i) => (
             <group key={`office_door_${i}`} position={[0.1, -1.75, z]}>
-              {/* Marco/Puerta madera */}
               <mesh>
                 <boxGeometry args={[0.05, 2.5, 1.4]} />
                 <meshStandardMaterial color="#8f3f2e" roughness={0.8} transparent opacity={interiorOpacity} />
               </mesh>
-              {/* Vidrio puerta */}
               <mesh position={[0.03, 0.4, 0]}>
                 <boxGeometry args={[0.01, 1, 0.8]} />
                 <meshStandardMaterial color="#c8d8e8" transparent opacity={0.3 * interiorOpacity} />
               </mesh>
             </group>
           ))}
+
+          {/* Paredes al fondo (basadas en el dibujo blanco) */}
+          <group position={[35, 0, -6]}>
+            {/* Estructura Grande Izquierda (Marco) */}
+            <group position={[0, 0, -28]}>
+              {/* --- Primera pared fondo Corregida (1 puerta central, 2 ventanas laterales) --- */}
+              <group position={[-14.75, 0, 0]}>
+                {/* Dintel superior (continuo) */}
+                <mesh position={[0, 2, 0]}>
+                  <boxGeometry args={[20, 2, 0.5]} />
+                  <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+                </mesh>
+
+                {/* Pilares principales que definen los huecos */}
+                {[ -8.5, -2.25, 2.25, 8.5 ].map((x, i) => (
+                  <mesh key={`pilar_fondo_${i}`} position={[x, -1, 0]}>
+                    <boxGeometry args={[x === 9 || x === -9 ? 3 : 2.5, 4, 0.5]} />
+                    <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+                  </mesh>
+                ))}
+
+                {/* Parte inferior bajo las ventanas (antepecho) */}
+                {[ -5.75, 5.75 ].map((x, i) => (
+                  <mesh key={`sill_fondo_${i}`} position={[x, -1.75, 0]}>
+                    <boxGeometry args={[4.5, 2.5, 0.5]} />
+                    <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+                  </mesh>
+                ))}
+
+                {/* Puerta central (que llega al suelo) */}
+                <group position={[0, -1, 0.1]}>
+                  <mesh>
+                    <boxGeometry args={[1.8, 4, 0.15]} />
+                    <meshStandardMaterial color="#8f3f2e" roughness={0.8} transparent opacity={interiorOpacity} />
+                  </mesh>
+                  {/* Detalle Picaporte */}
+                  <mesh position={[0.7, -0.2, 0.1]}>
+                    <sphereGeometry args={[0.06, 16, 16]} />
+                    <meshStandardMaterial color="#c0c0c0" metalness={0.8} />
+                  </mesh>
+                </group>
+
+                {/* Ventanas (una a cada lado de la puerta) */}
+                {[ -5.75, 5.75 ].map((x, i) => (
+                  <group key={`win_corr_fondo_${i}`} position={[x, 0.25, 0.1]}>
+                    {/* Vidrio */}
+                    <mesh>
+                      <boxGeometry args={[4.5, 1.5, 0.1]} />
+                      <meshStandardMaterial color="#c8d8e8" transparent opacity={0.3 * interiorOpacity} />
+                    </mesh>
+                    {/* Marco de ventana */}
+                    <mesh>
+                      <boxGeometry args={[4.7, 1.7, 0.05]} />
+                      <meshStandardMaterial color="#1a1e24" />
+                    </mesh>
+                  </group>
+                ))}
+              </group>
+
+              <group position={[-12.5,0,-9]}>
+                {/* --- Mobiliario Aula (Mesa, Sillas, Computadoras) - Lado A --- */}
+                <group position={[-14.9, 0, 5]} rotation={[0, Math.PI/2, 0]}>
+                  {/* Mesa Larga */}
+                  <mesh position={[0, -1.2, 0]} receiveShadow>
+                    <boxGeometry args={[10, 0.1, 2]} />
+                    <meshStandardMaterial color="#d3d0c8" roughness={0.8} />
+                  </mesh>
+                  {/* Patas mesa */}
+                  {[[-4.5, -0.8], [4.5, -0.8], [-4.5, 0.8], [4.5, 0.8]].map((p, i) => (
+                    <mesh key={`table_leg_a_${i}`} position={[p[0], -2.1, p[1]]}>
+                      <cylinderGeometry args={[0.05, 0.05, 1.8]} />
+                      <meshStandardMaterial color="#333" />
+                    </mesh>
+                  ))}
+                  {/* Sillas */}
+                  {[-3, 0, 3].map((x, i) => (
+                    <Chair key={`chair_aula_a_${i}`} position={[x, -2.1, 1]} rotation={[0, Math.PI, 0]} />
+                  ))}
+                  {/* Computadoras (Laptops) */}
+                  {[-3, 0, 3].map((x, i) => (
+                    <group key={`pc_a_${i}`} position={[x, -1.15, -0.3]}>
+                      {/* Base */}
+                      <mesh>
+                        <boxGeometry args={[0.8, 0.04, 0.6]} />
+                        <meshStandardMaterial color="#222" />
+                      </mesh>
+                      {/* Pantalla */}
+                      <mesh position={[0, 0.3, -0.25]} rotation={[-Math.PI / 10, 0, 0]}>
+                        <boxGeometry args={[0.8, 0.6, 0.02]} />
+                        <meshStandardMaterial color="#111" />
+                        {/* Brillo pantalla */}
+                        <mesh position={[0, 0, 0.011]}>
+                          <boxGeometry args={[0.7, 0.5, 0.001]} />
+                          <meshStandardMaterial color="#6ec9e3" emissive="#6ec9e3" emissiveIntensity={0.2} />
+                        </mesh>
+                      </mesh>
+                    </group>
+                  ))}
+                </group>
+                {/* --- Mobiliario Aula (Mesa, Sillas, Computadoras) - Lado B --- */}
+                <group position={[-16.9, 0, 5]} rotation={[0, -Math.PI/2, 0]}>
+                  {/* Mesa Larga */}
+                  <mesh position={[0, -1.2, 0]} receiveShadow>
+                    <boxGeometry args={[10, 0.1, 2]} />
+                    <meshStandardMaterial color="#d3d0c8" roughness={0.8} />
+                  </mesh>
+                  {/* Patas mesa */}
+                  {[[-4.5, -0.8], [4.5, -0.8], [-4.5, 0.8], [4.5, 0.8]].map((p, i) => (
+                    <mesh key={`table_leg_b_${i}`} position={[p[0], -2.1, p[1]]}>
+                      <cylinderGeometry args={[0.05, 0.05, 1.8]} />
+                      <meshStandardMaterial color="#333" />
+                    </mesh>
+                  ))}
+                  {/* Sillas */}
+                  {[-3, 0, 3].map((x, i) => (
+                    <Chair key={`chair_aula_b_${i}`} position={[x, -2.1, 1]} rotation={[0, Math.PI, 0]} />
+                  ))}
+                  {/* Computadoras (Laptops) */}
+                  {[-3, 0, 3].map((x, i) => (
+                    <group key={`pc_b_${i}`} position={[x, -1.15, -0.3]}>
+                      {/* Base */}
+                      <mesh>
+                        <boxGeometry args={[0.8, 0.04, 0.6]} />
+                        <meshStandardMaterial color="#222" />
+                      </mesh>
+                      {/* Pantalla */}
+                      <mesh position={[0, 0.3, -0.25]} rotation={[-Math.PI / 10, 0, 0]}>
+                        <boxGeometry args={[0.8, 0.6, 0.02]} />
+                        <meshStandardMaterial color="#111" />
+                        {/* Brillo pantalla */}
+                        <mesh position={[0, 0, 0.011]}>
+                          <boxGeometry args={[0.7, 0.5, 0.001]} />
+                          <meshStandardMaterial color="#6ec9e3" emissive="#6ec9e3" emissiveIntensity={0.2} />
+                        </mesh>
+                      </mesh>
+                    </group>
+                  ))}
+                </group>
+              </group>
+
+              {/*Segunda pared fondo */}
+              <mesh position={[5.5, 0, 0]}>
+                <boxGeometry args={[7, 6, 0.5]} />
+                <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+              </mesh>
+              {/*Tercera pared fondo */}
+              <mesh position={[20.5, 0, 0]}>
+                <boxGeometry args={[9, 5.9, 0.5]} />
+                <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+              </mesh>
+               {/*VIGA SUPERIOR Y TECHO*/}
+              <mesh position={[0.9, 2.8, -4]}>
+                <boxGeometry args={[51, 0.5, 9]} />
+                <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+              </mesh>
+            </group> 
+            <mesh position={[-24.5, 0, -32]} rotation={[0, Math.PI/2, 0]}>
+              <boxGeometry args={[8, 6, 0.2]} />
+              <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+            </mesh>
+            {/* Dos Paredes/Marcos más chicos a la derecha */}
+            <group key={`back_wall_small_2`} position={[-5, 0, -32]}>
+                 <mesh position={[0, 0, 0]} rotation={[0, Math.PI/2, 0]}>
+                   <boxGeometry args={[4, 6, 0.2]} />
+                   <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+                 </mesh>
+                 <mesh position={[0, 2.2, 0]} rotation={[0, Math.PI/2, 0]}>
+                   <boxGeometry args={[8.5, 1.5, 0.2]} />
+                   <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+                 </mesh>
+            </group>
+            <group key={`back_wall_small_2`} position={[2, 0, -32]}>
+                 <mesh position={[0.1, 0, 0]} rotation={[0, Math.PI/2, 0]}>
+                   <boxGeometry args={[8, 6, 0.2]} />
+                   <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+                 </mesh>
+                 <mesh position={[0.1, 2.2, 0]} rotation={[0, Math.PI/2, 0]}>
+                   <boxGeometry args={[8.5, 1.5, 0.2]} />
+                   <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+                 </mesh>
+            </group>
+            {/*PUERTA LABORATORIO*/}
+            <group key={`back_wall_small_2`} position={[9, 0, -32.5]}>
+                 <mesh position={[0.1, 0, 0]} rotation={[0, Math.PI/2, 0]}>
+                   <boxGeometry args={[5, 6, 0.2]} />
+                   <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+                 </mesh>
+                 
+            </group>
+            {/*PUERTA LABORATORIO*/}
+            <group key={`back_wall_small_2`} position={[9, 0, -32.5]}>
+                 <mesh position={[0.1, 0, 0]} rotation={[0, Math.PI/2, 0]}>
+                   <boxGeometry args={[5, 6, 0.2]} />
+                   <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+                 </mesh>
+                 <mesh position={[0.1, 2.2, 0]} rotation={[0, Math.PI/2, 0]}>
+                   <boxGeometry args={[8.5, 1.5, 0.2]} />
+                   <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+                 </mesh>
+            </group>
+            {/*PARED FONDO BANIOS */}
+            <group key={`back_wall_small_2`} position={[-1.5, 0, -31]}>
+                 <mesh position={[0.1, 0, 0]} rotation={[0, Math.PI, 0]}>
+                   <boxGeometry args={[8, 6, 0.2]} />
+                   <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+                 </mesh>
+            </group>
+
+            {/*PARED FONDO LABORATORIOS */}
+            <group key={`back_wall_small_2`} position={[13, 0, -31]}>
+                 <mesh position={[0.1, 0, 0]} rotation={[0, Math.PI, 0]}>
+                   <boxGeometry args={[8, 6, 0.2]} />
+                   <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+                 </mesh>
+            </group>
+          </group>
 
           {/* Ventanas de oficina */}
           {[-2.5, 2.5].map((z, i) => (
@@ -614,33 +873,126 @@ function WarehouseBuilding({ playerPos }) {
             </group>
           ))}
         </group>
+
+        {/* --- EXTENSIÓN DE ESTRUCTURAS IZQUIERDAS HACIA EL FONDO --- */}
+        <group visible={interiorOpacity > 0.01}>
+          {/* Extensión de Piso Mezzanine y Baranda */}
+          <group position={[-18, 5.9, -64.625]}>
+            <mesh receiveShadow>
+              <boxGeometry args={[12, 0.25, 20.25]} />
+              <meshStandardMaterial color="#333" roughness={0.8} transparent opacity={interiorOpacity} />
+            </mesh>
+            <mesh position={[6, 0.7, 0]}>
+              <boxGeometry args={[0.1, 1.4, 20.25]} />
+              <meshStandardMaterial color="#6f6b64" transparent opacity={interiorOpacity} />
+            </mesh>
+          </group>
+
+          {/* Extensión de Aulas (Piso Superior) */}
+          <group position={[-15.5, 8, -64.625]}>
+            <mesh>
+              <boxGeometry args={[0.2, 4, 20.25]} />
+              <meshStandardMaterial color="#f7f5f0" roughness={0.9} transparent opacity={interiorOpacity} />
+            </mesh>
+            {/* Divisorias adicionales */}
+            {[3, -4, -10.125].map((z, i) => (
+              <mesh key={`class_div_ext_${i}`} position={[-4.1, 0, z]}>
+                <boxGeometry args={[8.25, 4, 0.2]} />
+                <meshStandardMaterial color="#f7f5f0" roughness={0.9} transparent opacity={interiorOpacity} />
+              </mesh>
+            ))}
+            {/* Pared trasera adicional */}
+            <mesh position={[-8.2, 0, 0]}>
+              <boxGeometry args={[0.2, 4, 20.25]} />
+              <meshStandardMaterial color="#f7f5f0" roughness={0.9} transparent opacity={interiorOpacity} />
+            </mesh>
+            {/* Puertas adicionales */}
+            {[6.5, -0.5, -7.5].map((z, i) => (
+              <group key={`class_door_ext_${i}`} position={[0.11, -0.75, z]}>
+                <mesh>
+                  <boxGeometry args={[0.05, 2.5, 1.5]} />
+                  <meshStandardMaterial color="#8f3f2e" roughness={0.8} transparent opacity={interiorOpacity} />
+                </mesh>
+                <mesh position={[0.03, 0, 0.5]}>
+                  <sphereGeometry args={[0.04, 16, 16]} />
+                  <meshStandardMaterial color="#c0c0c0" metalness={0.8} />
+                </mesh>
+              </group>
+            ))}
+          </group>
+
+          {/* Extensión de Oficinas (Planta Baja) */}
+          <group position={[-14.9, 3, -64.875]}>
+            <mesh receiveShadow>
+              <boxGeometry args={[0.2, 6, 19.75]} />
+              <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
+            </mesh>
+            {/* Puertas de oficina adicionales */}
+            {[2.375, -5.625].map((z, i) => (
+              <group key={`off_door_ext_${i}`} position={[0.1, -1.75, z]}>
+                <mesh>
+                  <boxGeometry args={[0.05, 2.5, 1.4]} />
+                  <meshStandardMaterial color="#8f3f2e" roughness={0.8} transparent opacity={interiorOpacity} />
+                </mesh>
+                <mesh position={[0.03, 0.4, 0]}>
+                  <boxGeometry args={[0.01, 1, 0.8]} />
+                  <meshStandardMaterial color="#c8d8e8" transparent opacity={0.3 * interiorOpacity} />
+                </mesh>
+              </group>
+            ))}
+          </group>
+        </group>
       </group>
 
-      <mesh position={[11, 9, -25]} visible={!isInside}>
-        <boxGeometry args={[70.5, 6, 60]} />
-        <meshStandardMaterial color="#2a2f35" roughness={0.9} />
-      </mesh>
+      {/* Paredes superiores del galpón - Se mantienen visibles la trasera e izquierda al estar dentro */}
+      <group position={[11, 9, -35]}>
+        {/* Pared Atrás */}
+        <mesh position={[0, 0, -39.75]}>
+          <boxGeometry args={[70.5, 6, 0.5]} />
+          <meshStandardMaterial color="#2a2f35" roughness={0.9} polygonOffset polygonOffsetFactor={1} />
+        </mesh>
+        {/* Pared Izquierda */}
+        <mesh position={[-35.25, 0, 0]}>
+          <boxGeometry args={[0.5, 6, 80]} />
+          <meshStandardMaterial color="#2a2f35" roughness={0.9} polygonOffset polygonOffsetFactor={1} />
+        </mesh>
+        {/* Pared Derecha - Solo visible afuera */}
+        <mesh position={[35.25, 0, 0]} visible={!isInside}>
+          <boxGeometry args={[0.5, 6, 80]} />
+          <meshStandardMaterial color="#2a2f35" roughness={0.9} polygonOffset polygonOffsetFactor={1} />
+        </mesh>
+        {/* Pared Frente - Solo visible afuera */}
+        <mesh position={[0, 0, 39.75]} visible={!isInside}>
+          <boxGeometry args={[70.5, 6, 0.5]} />
+          <meshStandardMaterial color="#2a2f35" roughness={0.9} polygonOffset polygonOffsetFactor={1} />
+        </mesh>
+        {/* Techo superior plano - Solo visible afuera */}
+        <mesh position={[0, 3, 0]} rotation={[-Math.PI / 2, 0, 0]} visible={!isInside}>
+          <planeGeometry args={[70.5, 80]} />
+          <meshStandardMaterial color="#2a2f35" roughness={0.9} />
+        </mesh>
+      </group>
 
       <mesh
-        position={[11, 13.1667, -25]}
+        position={[11, 13.1667, -35]}
         rotation={[-Math.PI / 2, 0, 0]}
         scale={[40.7, 1, 2.3333]}
         visible={!isInside}
       >
-        <cylinderGeometry args={[1, 1, 60, 3]} />
+        <cylinderGeometry args={[1, 1, 80, 3]} />
         <meshStandardMaterial color="#2a2f35" roughness={0.9} flatShading />
       </mesh>
 
       <group visible={!isInside}>
         <InstancedRibs
-          count={149}
+          count={199}
           args={[35, 0.05, 0.12]}
           color="#1a2026"
           getPosition={getRoofRibPosLeft}
           getRotation={() => [0, 0, 0.11]}
         />
         <InstancedRibs
-          count={149}
+          count={199}
           args={[35, 0.05, 0.12]}
           color="#1a2026"
           getPosition={getRoofRibPosRight}
@@ -1319,6 +1671,108 @@ function Scenery({ playerPos }) {
 
 // --- Characters ---
 
+function Bot3D({ scale = 1, isWalking = false, facingRight = true }) {
+  return (
+    <group scale={[scale, scale, scale]}>
+      {/* Piernas */}
+      <mesh position={[-0.2, 0.4, 0]}>
+        <cylinderGeometry args={[0.1, 0.1, 0.8, 8]} />
+        <meshStandardMaterial color="#ff7663" />
+      </mesh>
+      <mesh position={[0.2, 0.4, 0]}>
+        <cylinderGeometry args={[0.1, 0.1, 0.8, 8]} />
+        <meshStandardMaterial color="#ff7663" />
+      </mesh>
+      {/* Pies */}
+      <mesh position={[-0.2, 0.05, 0]}>
+        <sphereGeometry args={[0.15, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial color="#fcd1cc" />
+      </mesh>
+      <mesh position={[0.2, 0.05, 0]}>
+        <sphereGeometry args={[0.15, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial color="#fcd1cc" />
+      </mesh>
+
+      {/* Cuerpo */}
+      <mesh position={[0, 1.2, 0]}>
+        <boxGeometry args={[0.8, 0.8, 0.4]} />
+        <meshStandardMaterial color="#ff7663" />
+      </mesh>
+      {/* Logo % (simplificado como un detalle blanco) */}
+      <mesh position={[0, 1.2, 0.21]}>
+        <boxGeometry args={[0.4, 0.4, 0.01]} />
+        <meshStandardMaterial color="#ffffff" />
+      </mesh>
+
+      {/* Hombros */}
+      <mesh position={[-0.45, 1.4, 0]}>
+        <sphereGeometry args={[0.12, 16, 16]} />
+        <meshStandardMaterial color="#fcd1cc" />
+      </mesh>
+      <mesh position={[0.45, 1.4, 0]}>
+        <sphereGeometry args={[0.12, 16, 16]} />
+        <meshStandardMaterial color="#fcd1cc" />
+      </mesh>
+
+      {/* Brazos */}
+      <mesh position={[-0.55, 1.1, 0]} rotation={[0, 0, 0.2]}>
+        <cylinderGeometry args={[0.08, 0.08, 0.6, 8]} />
+        <meshStandardMaterial color="#ff7663" />
+      </mesh>
+      <mesh position={[0.55, 1.1, 0]} rotation={[0, 0, -0.2]}>
+        <cylinderGeometry args={[0.08, 0.08, 0.6, 8]} />
+        <meshStandardMaterial color="#ff7663" />
+      </mesh>
+      {/* Manos */}
+      <mesh position={[-0.65, 0.8, 0]}>
+        <sphereGeometry args={[0.1, 16, 16]} />
+        <meshStandardMaterial color="#fcd1cc" />
+      </mesh>
+      <mesh position={[0.65, 0.8, 0]}>
+        <sphereGeometry args={[0.1, 16, 16]} />
+        <meshStandardMaterial color="#fcd1cc" />
+      </mesh>
+
+      {/* Cabeza (Forma pixelada simulada con cajas) */}
+      <group position={[0, 2.0, 0]}>
+        {/* Base cabeza */}
+        <mesh>
+          <boxGeometry args={[1, 0.8, 0.5]} />
+          <meshStandardMaterial color="#fcd1cc" />
+        </mesh>
+        {/* Cara roja */}
+        <mesh position={[0, 0.1, 0.26]}>
+          <boxGeometry args={[0.7, 0.4, 0.05]} />
+          <meshStandardMaterial color="#ff7663" />
+        </mesh>
+        {/* Ojos */}
+        <mesh position={[-0.2, 0.1, 0.3]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.08, 0.08, 0.02, 16]} />
+          <meshStandardMaterial color="#6ec9e3" emissive="#6ec9e3" emissiveIntensity={0.5} />
+        </mesh>
+        <mesh position={[0.2, 0.1, 0.3]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.08, 0.08, 0.02, 16]} />
+          <meshStandardMaterial color="#6ec9e3" emissive="#6ec9e3" emissiveIntensity={0.5} />
+        </mesh>
+        {/* Antena base */}
+        <mesh position={[0, 0.45, 0]}>
+          <sphereGeometry args={[0.15, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <meshStandardMaterial color="#fcd1cc" />
+        </mesh>
+        {/* Antenas hilos */}
+        <mesh position={[-0.15, 0.7, 0]} rotation={[0, 0, 0.5]}>
+          <cylinderGeometry args={[0.01, 0.01, 0.4, 8]} />
+          <meshStandardMaterial color="#888" />
+        </mesh>
+        <mesh position={[0.15, 0.7, 0]} rotation={[0, 0, -0.5]}>
+          <cylinderGeometry args={[0.01, 0.01, 0.4, 8]} />
+          <meshStandardMaterial color="#888" />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
 function WalkingSprite({ url, scale = 1.5 }) {
   const ref = useRef();
   const groupRef = useRef();
@@ -1359,14 +1813,14 @@ function WalkingSprite({ url, scale = 1.5 }) {
         else if (dir.x < 0) s.facingRight = false;
         const time = state.clock.getElapsedTime();
         ref.current.position.y =
-          Math.abs(Math.sin(time * 15)) * 0.15 + scale * 0.4;
+          Math.abs(Math.sin(time * 15)) * 0.1 + scale * 0.2;
         ref.current.rotation.z = Math.sin(time * 15) * 0.05;
       }
     } else {
       s.waitTime -= delta;
       const time = state.clock.getElapsedTime();
       ref.current.position.y =
-        Math.sin(time * 3) * 0.05 + scale * 0.4;
+        Math.sin(time * 3) * 0.05 + scale * 0.2;
       ref.current.rotation.z = 0;
       if (s.waitTime <= 0) {
         s.isWalking = true;
@@ -1381,10 +1835,11 @@ function WalkingSprite({ url, scale = 1.5 }) {
     invalidate();
   });
 
+  const s = stateRef.current;
   return (
     <group ref={groupRef}>
-      <group ref={ref} rotation={[0, 0, 0]}>
-        <Image key={imgUrl} url={imgUrl} transparent scale={[1, 1]} />
+      <group ref={ref} rotation={[0, s.facingRight ? Math.PI / 2 : -Math.PI / 2, 0]}>
+        <Bot3D scale={scale} isWalking={s.isWalking} />
       </group>
     </group>
   );
@@ -1397,6 +1852,7 @@ function PlayerDino({ url, scale = 1.5, onPositionUpdate, teleportPos }) {
   const pos = useMemo(() => new THREE.Vector3(0, 0, 0), []);
   const velocity = useMemo(() => new THREE.Vector3(), []);
   const speed = 10;
+  const lastRot = useRef(0);
 
   useFrame((state, delta) => {
     if (!ref.current || !groupRef.current) return;
@@ -1417,20 +1873,23 @@ function PlayerDino({ url, scale = 1.5, onPositionUpdate, teleportPos }) {
       velocity.normalize().multiplyScalar(speed * delta);
       pos.add(velocity);
 
-      // Look at move direction (left/right)
-      if (Math.abs(velocity.x) > 0.1) {
-        ref.current.scale.x = velocity.x < 0 ? -scale : scale;
+      // 4-way rotation
+      let targetRot = lastRot.current;
+      if (Math.abs(velocity.x) > 0.1 || Math.abs(velocity.z) > 0.1) {
+        targetRot = Math.atan2(velocity.x, velocity.z);
+        lastRot.current = targetRot;
       }
+      ref.current.rotation.y = targetRot;
       const time = state.clock.getElapsedTime();
-      ref.current.position.y = Math.abs(Math.sin(time * 15)) * 0.15 + scale * 0.4;
+      ref.current.position.y = Math.abs(Math.sin(time * 15)) * 0.1 + scale * 0.2;
       ref.current.rotation.z = Math.sin(time * 15) * 0.05;
     } else {
       const time = state.clock.getElapsedTime();
-      ref.current.position.y = Math.sin(time * 3) * 0.05 + scale * 0.4;
+      ref.current.position.y = Math.sin(time * 3) * 0.05 + scale * 0.2;
       ref.current.rotation.z = 0;
     }
 
-    const isInside = pos.x > -12.2 && pos.x < 26.2 && pos.z < -12.3 && pos.z > -56.2;
+    const isInside = pos.x > -12.2 && pos.x < 26.2 && pos.z < -12.3 && pos.z > -76.2;
     
     // Cálculo de altura (Y) - Simplificado: solo pisos, no escaleras auto
     let targetY = 0;
@@ -1460,8 +1919,8 @@ function PlayerDino({ url, scale = 1.5, onPositionUpdate, teleportPos }) {
 
   return (
     <group ref={groupRef}>
-      <group ref={ref} rotation={[0, 0, 0]}>
-        <Image url={import.meta.env.BASE_URL + url} transparent scale={[1, 1]} />
+      <group ref={ref}>
+        <Bot3D scale={scale} isWalking={velocity.length() > 0.1} />
       </group>
     </group>
   );
@@ -1789,7 +2248,7 @@ function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosC
       ))}
       <PlayerDino 
         url="dinoCharacter.png" 
-        scale={1.5} 
+        scale={0.7} 
         onPositionUpdate={(p) => {
           setPlayerPos(p);
           onPlayerPosChange?.(p);
@@ -1812,10 +2271,9 @@ function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosC
           </div>
         </Html>
       )}
-      <WalkingSprite url="botdia.png" scale={1.8} />
+      {/* WalkingSprite (bot antiguo) removido */}
       <Scenery playerPos={playerPos} />
-      
-      <Particles />
+
 
       <mesh position={[41, -0.05, -2]} receiveShadow>
         <boxGeometry args={[118, 0.1, 22]} />
