@@ -535,15 +535,68 @@ function WarehouseBuilding({ playerPos }) {
             </mesh>
           ))}
         </group>
-        {/* Mostrador Kiosko */}
-        <mesh position={[37, 0.5, -4.7]} rotation={[0, Math.PI/2, 0]} visible={interiorOpacity > 0.01}>
-          <boxGeometry args={[10, 3.5, 0.5]} />
-          <meshStandardMaterial color="#4b4b4b" roughness={0.9} transparent opacity={interiorOpacity} polygonOffset polygonOffsetFactor={1} />
-        </mesh>
-        <mesh position={[41.75, 0.5, -0]} rotation={[0, Math.PI, 0]} visible={interiorOpacity > 0.01}>
-          <boxGeometry args={[9, 3.5, 0.5]} />
-          <meshStandardMaterial color="#4b4b4b" roughness={0.9} transparent opacity={interiorOpacity} polygonOffset polygonOffsetFactor={1} />
-        </mesh>
+        {/* --- Mostrador Kiosko / Cafetería Renovado --- */}
+        <group visible={interiorOpacity > 0.01}>
+          {/* Parte L del mostrador (Lateral) */}
+          <group position={[37, 0.5, -4.7]} rotation={[0, Math.PI/2, 0]}>
+            <mesh>
+              <boxGeometry args={[10, 3.5, 0.6]} />
+              <meshStandardMaterial color="#2d3436" roughness={0.8} transparent opacity={interiorOpacity} polygonOffset polygonOffsetFactor={1} />
+            </mesh>
+            {/* Tapa de Madera */}
+            <mesh position={[0, 1.8, 0.1]}>
+              <boxGeometry args={[10.2, 0.2, 0.8]} />
+              <meshStandardMaterial color="#8b5a2b" roughness={0.4} />
+            </mesh>
+          </group>
+          {/* Parte L del mostrador (Frontal) */}
+          <group position={[41.75, 0.5, 0]} rotation={[0, Math.PI, 0]}>
+            <mesh>
+              <boxGeometry args={[9, 3.5, 0.6]} />
+              <meshStandardMaterial color="#2d3436" roughness={0.8} transparent opacity={interiorOpacity} polygonOffset polygonOffsetFactor={1} />
+            </mesh>
+            {/* Tapa de Madera */}
+            <mesh position={[0, 1.8, 0.1]}>
+              <boxGeometry args={[9.2, 0.2, 0.8]} />
+              <meshStandardMaterial color="#8b5a2b" roughness={0.4} />
+            </mesh>
+          </group>
+
+          {/* Heladera de Bebidas */}
+          <group position={[44.5, 1.5, -4.5]}>
+            <mesh>
+              <boxGeometry args={[2.5, 7.5, 2.8]} />
+              <meshStandardMaterial color="#1a1a1a" metalness={0.5} />
+            </mesh>
+            {/* Puerta de Vidrio con Brillo */}
+            <mesh position={[0, 0, 0.91]}>
+              <boxGeometry args={[2.1, 5, 0.05]} />
+              <meshStandardMaterial color="#c8d8e8" transparent opacity={0.4} emissive="#6ec9e3" emissiveIntensity={0.1} />
+            </mesh>
+            
+          </group>
+
+          {/* Objetos sobre el mostrador */}
+          <group position={[37.3, 2.5, -2]}>
+            {/* Cafetera Express */}
+            <mesh position={[4, 0.6, 2.1]} rotation={[0, -Math.PI/2, 0]}>
+              <boxGeometry args={[0.8, 1, 0.7]} />
+              <meshStandardMaterial color="#333" metalness={0.8} />
+            </mesh>
+            {/* Terminal POS / Caja */}
+            <mesh position={[0, 0.3, -2.5]} rotation={[0, -Math.PI/2, 0]}>
+              <boxGeometry args={[0.5, 0.3, 0.6]} />
+              <meshStandardMaterial color="#222" />
+            </mesh>
+            {/* Pequeño exhibidor de snacks */}
+            <group position={[0.1, 1, -6]} rotation={[0, -Math.PI/2, 0]}>
+              <mesh><boxGeometry args={[1, 2, 0.5]} /><meshStandardMaterial color="#fff" transparent opacity={0.4} /></mesh>
+              <mesh position={[0, -0.1, 0]}><boxGeometry args={[0.8, 0.4, 0.3]} /><meshStandardMaterial color="#e67e22" /></mesh>
+              <mesh position={[0, -0.5, 0]}><boxGeometry args={[0.8, 0.4, 0.3]} /><meshStandardMaterial color="#22f6e4" /></mesh>
+              <mesh position={[0, 0.35, 0]}><boxGeometry args={[0.8, 0.4, 0.3]} /><meshStandardMaterial color="#522374" /></mesh>
+            </group>
+          </group>
+        </group>
 
         {/* Entrepiso / Piso intermedio */}
         <group position={[-18, 5.9, -31]} visible={interiorOpacity > 0.01}>
@@ -566,7 +619,7 @@ function WarehouseBuilding({ playerPos }) {
             {/* Techo de Aulas */}
             <mesh position={[-4.1, 2, 0]}>
               <boxGeometry args={[8.5, 0.1, 40]} />
-              <meshStandardMaterial color="#f7f5f0" roughness={0.9} transparent opacity={interiorOpacity} />
+              <meshStandardMaterial color="#a4a4a4" roughness={0.9} transparent opacity={interiorOpacity} />
             </mesh>
             {/* Paredes laterales (divisorias) */}
             {[-20, -14, -5, 4, 13, 20 ].map((z, i) => (
@@ -955,7 +1008,7 @@ function WarehouseBuilding({ playerPos }) {
             {/* Techo de Aulas Extensión */}
             <mesh position={[-4.1, 2, 0]}>
               <boxGeometry args={[8.5, 0.1, 20.25]} />
-              <meshStandardMaterial color="#f7f5f0" roughness={0.9} transparent opacity={interiorOpacity} />
+              <meshStandardMaterial color="#a4a4a4" roughness={0.9} transparent opacity={interiorOpacity} />
             </mesh>
             {/* Divisorias adicionales */}
             {[3, -4, -10.125].map((z, i) => (
@@ -1981,7 +2034,7 @@ function PlayerDino({ url, scale = 1.5, onPositionUpdate, teleportPos }) {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} visible={false}>
       <group ref={ref}>
         <Bot3D scale={scale} isWalking={velocity.length() > 0.1} />
       </group>
