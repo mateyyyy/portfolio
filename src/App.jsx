@@ -105,8 +105,9 @@ const _storyProjects = [
       "Los negocios locales no tenían forma sencilla de vender online sin depender de plataformas caras o complejas. Montar una tienda requería conocimientos técnicos que la mayoría no tenía.",
     solution:
       "Construí una plataforma que permite crear y gestionar tiendas online en minutos. [← COMPLETAR con detalles técnicos: arquitectura, tecnologías clave, decisiones de diseño]",
-    image: "/ReelSimpleBuy10.mp4",
-    isVideo: true,
+    images: ["/SimpleBuyPedidos.png", "/SimpleBuyproductos.png"],
+    image: "/SimpleBuyPedidos.png",
+    isVideo: false,
     color: "#2a3a32",
   },
   {
@@ -665,26 +666,41 @@ function useActiveSection() {
 // ─── NAVBAR ───────────────────────────────────────────────────────────────────
 function Navbar({ active }) {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
+  // Close mobile menu on scroll or click
+  useEffect(() => {
+    if (mobileOpen) {
+      const close = () => setMobileOpen(false);
+      window.addEventListener("scroll", close);
+      return () => window.removeEventListener("scroll", close);
+    }
+  }, [mobileOpen]);
+
   const scrollTo = (id) => {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
   return (
-    <nav className={`nav-root ${scrolled ? "scrolled" : ""}`}>
+    <nav className={`nav-root ${scrolled ? "scrolled" : ""} ${mobileOpen ? "mobile-open" : ""}`}>
       <div
+        className="nav-container"
         style={{
           maxWidth: 960,
           margin: "0 auto",
           padding: "0 32px",
-          height: 56,
+          height: 64,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          position: "relative",
+          zIndex: 100
         }}
       >
         <button
@@ -693,24 +709,66 @@ function Navbar({ active }) {
         >
           MG.
         </button>
-        <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
+
+        {/* Desktop Links */}
+        <div className="nav-links-desktop" style={{ display: "flex", alignItems: "center", gap: 28 }}>
           {navItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => scrollTo(item.id)}
+              onClick={() => {
+                scrollTo(item.id);
+                setMobileOpen(false);
+              }}
               className={`nav-link ${active === item.id ? "active" : ""}`}
             >
               {item.label}
             </button>
           ))}
+          <a
+            href="mailto:matiasgimenez452@gmail.com"
+            className="btn-primary"
+            style={{ padding: "8px 18px", fontSize: 12, marginLeft: 8 }}
+          >
+            Contacto
+          </a>
         </div>
-        <a
-          href="mailto:matiasgimenez452@gmail.com"
-          className="btn-primary"
-          style={{ padding: "8px 18px", fontSize: 12 }}
+
+        {/* Mobile Toggle */}
+        <button 
+          className="nav-mobile-toggle"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle menu"
         >
-          Contacto
-        </a>
+          <div className={`hamburger ${mobileOpen ? "active" : ""}`}>
+            <span></span>
+            <span></span>
+          </div>
+        </button>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      <div className={`nav-mobile-overlay ${mobileOpen ? "active" : ""}`}>
+        <div className="nav-mobile-links">
+          {navItems.map((item, i) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                scrollTo(item.id);
+                setMobileOpen(false);
+              }}
+              className={`nav-mobile-link ${active === item.id ? "active" : ""}`}
+              style={{ transitionDelay: `${i * 0.05}s` }}
+            >
+              <span className="nav-mobile-num">{String(i + 1).padStart(2, '0')}</span>
+              {item.label}
+            </button>
+          ))}
+          <div className="nav-mobile-footer">
+            <a href="mailto:matiasgimenez452@gmail.com" className="btn-primary" style={{ width: "100%", justifyContent: "center" }}>
+              Contactame
+            </a>
+          </div>
+        </div>
       </div>
     </nav>
   );
@@ -1590,27 +1648,6 @@ function HeroBoot({ onStartStory }) {
           <span className="hero-nm-first">Matías</span>
           <span className="hero-nm-last">Giménez</span>
         </h1>
-        <button
-          className="hero-story-btn"
-          onClick={() => {
-            onStartStory?.();
-          }}
-          style={{ display: "flex", alignItems: "center", gap: "8px" }}
-        >
-          Explorar en 3D
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-          </svg>
-        </button>
       </div>
     </section>
   );
@@ -1632,7 +1669,9 @@ function Featured3D({ onStartStory }) {
           <div className="featured-3d-tag">Experiencia Inmersiva</div>
           <h2 className="featured-3d-title">Explora mi Portfolio en 3D</h2>
           <p className="featured-3d-desc">
-            Explora mis proyectos dentro de una recreación de mi universidad. Este espacio representa el lugar donde me formé y donde nacieron las ideas que hoy son realidad.
+            Explora mis proyectos dentro de una recreación de mi universidad.
+            Este espacio representa el lugar donde me formé y donde nacieron las
+            ideas que hoy son realidad.
           </p>
           <button className="featured-3d-btn">
             Entrar al Mundo 3D
@@ -1651,7 +1690,11 @@ function Featured3D({ onStartStory }) {
           </button>
         </div>
         <div className="featured-3d-image-wrap">
-          <img src={import.meta.env.BASE_URL + "preview3d.png"} alt="3D Portfolio Preview" className="featured-3d-img" />
+          <img
+            src={import.meta.env.BASE_URL + "preview3d.png"}
+            alt="3D Portfolio Preview"
+            className="featured-3d-img"
+          />
           <div className="featured-3d-overlay" />
         </div>
       </div>
@@ -2099,50 +2142,6 @@ function App() {
       <MediaModal mediaModal={mediaModal} setMediaModal={setMediaModal} />
       <PeekingBot />
 
-      {!storyActive && (
-        <button
-          className="fab-3d-btn"
-          onClick={() => setStoryActive(true)}
-          style={{
-            position: "fixed",
-            bottom: "clamp(16px, 4vw, 32px)",
-            right: "clamp(16px, 4vw, 32px)",
-            zIndex: 50,
-            background: "var(--ink-main, #1a1814)",
-            color: "var(--bg-main, #fcfbf8)",
-            border: "none",
-            borderRadius: "30px",
-            padding: "clamp(12px, 3vw, 16px) clamp(16px, 4vw, 24px)",
-            fontFamily: "var(--font-sans)",
-            fontSize: "14px",
-            fontWeight: 500,
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            cursor: "pointer",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-            transition: "transform 0.2s ease, opacity 0.2s ease",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.transform = "scale(1.05)")
-          }
-          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-        >
-          <span className="fab-text">Ver 3D</span>
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-          </svg>
-        </button>
-      )}
       <Suspense fallback={null}>
         <Story3D
           projects={storyTimeline}

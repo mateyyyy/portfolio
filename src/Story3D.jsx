@@ -4,10 +4,10 @@ import React, {
   useEffect,
   useMemo,
   useCallback,
+  Suspense,
 } from "react";
-import { Canvas, useFrame, useThree, invalidate } from "@react-three/fiber";
+import { Canvas, useFrame, useThree, invalidate, useLoader } from "@react-three/fiber";
 import {
-  Image,
   Text,
   useCursor,
   Html,
@@ -20,18 +20,73 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 
+// SafeImage: loads texture with fallback on CORS/404 errors
+class ImageErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { failed: false }; }
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() {
+    if (this.state.failed) return this.props.fallback ?? null;
+    return this.props.children;
+  }
+}
+
+function TextureImage({ url, scale, position }) {
+  const texture = useLoader(THREE.TextureLoader, url);
+  return (
+    <mesh position={position}>
+      <planeGeometry args={scale} />
+      <meshBasicMaterial map={texture} transparent />
+    </mesh>
+  );
+}
+
+function FallbackPlane({ scale, position }) {
+  return (
+    <mesh position={position}>
+      <planeGeometry args={scale} />
+      <meshBasicMaterial color="#c0beb6" />
+    </mesh>
+  );
+}
+
+function SafeImage({ url, scale, position }) {
+  return (
+    <ImageErrorBoundary fallback={<FallbackPlane scale={scale} position={position} />}>
+      <Suspense fallback={<FallbackPlane scale={scale} position={position} />}>
+        <TextureImage url={url} scale={scale} position={position} />
+      </Suspense>
+    </ImageErrorBoundary>
+  );
+}
+
 // Constants
 const SPACING = 5;
-const positions = [
-  [-1, -1.5],
-  [1, -1.5],
-  [-1, -0.5],
-  [1, -0.5],
-  [-1, 0.5],
-  [1, 0.5],
-  [-1, 1.5],
-  [1, 1.5],
-];
+
+// Dynamic positions — 2-column grid, grows with project count
+function buildPositions(count) {
+  const cols = 2;
+  const rows = Math.ceil(count / cols);
+  const result = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (result.length >= count) break;
+      const x = c === 0 ? -1 : 1;
+      const z = -(r - (rows - 1) / 2);
+      result.push([x, z]);
+    }
+  }
+  return result;
+}
+
+// Tag-based pedestal heights for visual hierarchy
+const TAG_HEIGHTS = {
+  SaaS: 1.5,
+  "Back-End": 1.2,
+  Web: 1.0,
+  Hackathon: 1.0,
+  Evento: 0.8,
+};
+const DEFAULT_PED_HEIGHT = 0.9;
 
 // --- Environment Props ---
 
@@ -226,7 +281,7 @@ function WarehouseBuilding({ playerPos }) {
     
   const wallOpacity = 1;
   const roofOpacity = 1;
-  const interiorOpacity = isInside ? 1 : 0;
+  const interiorOpacity = 1;
 
   // Stable functions for InstancedRibs (Depth 80)
   const getRoofRibPosLeft = useMemo(() => (i) => [11 - 17.5, 14.6 - 0.58, -74.25 + i * 0.4], []);
@@ -259,12 +314,10 @@ function WarehouseBuilding({ playerPos }) {
         </>
       )}
       {/* Piso interior hormigon oscuro (Depth 80) */}
-      {isInside && (
-        <mesh position={[11, 0.15, -35]} receiveShadow>
-          <boxGeometry args={[70, 0.08, 80]} />
-          <meshStandardMaterial color="#444" roughness={0.9} />
-        </mesh>
-      )}
+      <mesh position={[11, 0.15, -35]} receiveShadow>
+        <boxGeometry args={[70, 0.08, 80]} />
+        <meshStandardMaterial color="#444" roughness={0.9} />
+      </mesh>
       <group>
         <mesh position={[11, 3, -74.75]}>
           <boxGeometry args={[70.5, 6, 0.5]} />
@@ -373,7 +426,7 @@ function WarehouseBuilding({ playerPos }) {
         <Chair position={[29.5, 0, -7.9]} rotation={[0, -Math.PI/2, 0]} />
 
         {/* Segundo piso de la cafetería - Solo se ve el techo si estás arriba */}
-        <group position={[14.4, 6, -3]} visible={interiorOpacity > 0.01 && isOnUpperFloor}>
+        <group position={[14.4, 6, -3]} visible={!isInside || isOnUpperFloor}>
           {/* Piso mezzanine oscuro */}
           <mesh receiveShadow>
             <boxGeometry args={[63, 0.2, 13]} />
@@ -385,31 +438,28 @@ function WarehouseBuilding({ playerPos }) {
             <boxGeometry args={[35, 4, 0.2]} />
             <meshStandardMaterial color="#fcfaf2" roughness={0.9} transparent opacity={interiorOpacity} />
           </mesh>
-          <mesh position={[12.5, 2.1, 6.4]}>
-            <boxGeometry args={[35, 4, 0.2]} />
-            <meshStandardMaterial color="#fcfaf2" roughness={0.9} transparent opacity={interiorOpacity} />
-          </mesh>
+          
           
           {/*Sillas de auditorio*/}
           
-          {Array.from({ length: 9 }).map((_, i) => {
+          {Array.from({ length: 10 }).map((_, i) => {
           return (
-            <Chair position={[0 + i*2, 1, -3]} rotation={[0, Math.PI/2, 0]} />
+            <Chair position={[-1.5 + i*2.1, 1, -4]} rotation={[0, Math.PI/2, 0]} />
           );
         })}
         {Array.from({ length: 9 }).map((_, i) => {
           return (
-            <Chair position={[0 + i*2.5, 1, -1]} rotation={[0, Math.PI/2, 0]} />
+            <Chair position={[-1.5 + i*2.5, 1, -1]} rotation={[0, Math.PI/2, 0]} />
           );
         })}
         {Array.from({ length: 9 }).map((_, i) => {
           return (
-            <Chair position={[0 + i*2.5, 1, 1]} rotation={[0, Math.PI/2, 0]} />
+            <Chair position={[-1.5 + i*2.5, 1, 2]} rotation={[0, Math.PI/2, 0]} />
           );
         })}  
         {Array.from({ length: 9 }).map((_, i) => {
           return (
-            <Chair position={[0 + i*2.5, 1, 3]} rotation={[0, Math.PI/2, 0]} />
+            <Chair position={[-1.5 + i*2.5, 1, 5]} rotation={[0, Math.PI/2, 0]} />
           );
         })}  
         
@@ -599,7 +649,7 @@ function WarehouseBuilding({ playerPos }) {
         </group>
 
         {/* Entrepiso / Piso intermedio */}
-        <group position={[-18, 5.9, -31]} visible={interiorOpacity > 0.01}>
+        <group position={[-18, 5.9, -31]} visible={true}>
           <mesh receiveShadow>
             <boxGeometry args={[12, 0.25, 47]} />
             <meshStandardMaterial color="#333" roughness={0.8} transparent opacity={interiorOpacity} />
@@ -922,7 +972,7 @@ function WarehouseBuilding({ playerPos }) {
                    <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
                  </mesh>
             </group>
-            <group key={`back_wall_small_2`} position={[2, 0, -32]}>
+            <group key={`back_wall_small_3`} position={[2, 0, -32]}>
                  <mesh position={[0.1, 0, 0]} rotation={[0, Math.PI/2, 0]}>
                    <boxGeometry args={[8, 6, 0.2]} />
                    <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
@@ -933,7 +983,7 @@ function WarehouseBuilding({ playerPos }) {
                  </mesh>
             </group>
             {/*PUERTA LABORATORIO*/}
-            <group key={`back_wall_small_2`} position={[9, 0, -32.5]}>
+            <group key={`back_wall_small_4`} position={[9, 0, -32.5]}>
                  <mesh position={[0.1, 0, 0]} rotation={[0, Math.PI/2, 0]}>
                    <boxGeometry args={[5, 6, 0.2]} />
                    <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
@@ -941,7 +991,7 @@ function WarehouseBuilding({ playerPos }) {
                  
             </group>
             {/*PUERTA LABORATORIO*/}
-            <group key={`back_wall_small_2`} position={[9, 0, -32.5]}>
+            <group key={`back_wall_small_5`} position={[9, 0, -32.5]}>
                  <mesh position={[0.1, 0, 0]} rotation={[0, Math.PI/2, 0]}>
                    <boxGeometry args={[5, 6, 0.2]} />
                    <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
@@ -952,7 +1002,7 @@ function WarehouseBuilding({ playerPos }) {
                  </mesh>
             </group>
             {/*PARED FONDO BANIOS */}
-            <group key={`back_wall_small_2`} position={[-1.5, 0, -31]}>
+            <group key={`back_wall_small_6`} position={[-1.5, 0, -31]}>
                  <mesh position={[0.1, 0, 0]} rotation={[0, Math.PI, 0]}>
                    <boxGeometry args={[8, 6, 0.2]} />
                    <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
@@ -960,7 +1010,7 @@ function WarehouseBuilding({ playerPos }) {
             </group>
 
             {/*PARED FONDO LABORATORIOS */}
-            <group key={`back_wall_small_2`} position={[13, 0, -31]}>
+            <group key={`back_wall_small_7`} position={[13, 0, -31]}>
                  <mesh position={[0.1, 0, 0]} rotation={[0, Math.PI, 0]}>
                    <boxGeometry args={[8, 6, 0.2]} />
                    <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={interiorOpacity} />
@@ -986,7 +1036,7 @@ function WarehouseBuilding({ playerPos }) {
         </group>
 
         {/* --- EXTENSIÓN DE ESTRUCTURAS IZQUIERDAS HACIA EL FONDO --- */}
-        <group visible={interiorOpacity > 0.01}>
+        <group visible={true}>
           {/* Extensión de Piso Mezzanine y Baranda */}
           <group position={[-18, 5.9, -64.625]}>
             <mesh receiveShadow>
@@ -1077,11 +1127,47 @@ function WarehouseBuilding({ playerPos }) {
           <boxGeometry args={[0.5, 6, 80]} />
           <meshStandardMaterial color="#2a2f35" roughness={0.9} polygonOffset polygonOffsetFactor={1} />
         </mesh>
-        {/* Pared Frente - Solo visible afuera */}
-        <mesh position={[0, 0, 39.75]} visible={!isInside}>
-          <boxGeometry args={[70.5, 6, 0.5]} />
-          <meshStandardMaterial color="#2a2f35" roughness={0.9} polygonOffset polygonOffsetFactor={1} />
-        </mesh>
+        {/* Pared Frente (Fraccionada para huecos de ventanas) */}
+        <group position={[0, 0, 39.75]} visible={!isInside}>
+          {/* Base de la pared (debajo de ventanas) */}
+          <mesh position={[0, -2.25, 0]}>
+            <boxGeometry args={[70.5, 1.5, 0.5]} />
+            <meshStandardMaterial color="#2a2f35" roughness={0.9} />
+          </mesh>
+          {/* Top de la pared (encima de ventanas) */}
+          <mesh position={[0, 2.75, 0]}>
+            <boxGeometry args={[70.5, 0.5, 0.5]} />
+            <meshStandardMaterial color="#2a2f35" roughness={0.9} />
+          </mesh>
+          {/* Secciones verticales (entre ventanas y laterales) */}
+          {/* Lateral izquierdo hasta ventana -27 (world -16) */}
+          <mesh position={[-31.875, 0.25, 0]}>
+            <boxGeometry args={[6.75, 4.5, 0.5]} />
+            <meshStandardMaterial color="#2a2f35" roughness={0.9} />
+          </mesh>
+          {/* Entre -27 y 3 (world 14) */}
+          <mesh position={[-12, 0.25, 0]}>
+            <boxGeometry args={[27, 4.5, 0.5]} />
+            <meshStandardMaterial color="#2a2f35" roughness={0.9} />
+          </mesh>
+          {/* Entre 3 y 10 (world 21) */}
+          <mesh position={[6.5, 0.25, 0]}>
+            <boxGeometry args={[4, 4.5, 0.5]} />
+            <meshStandardMaterial color="#2a2f35" roughness={0.9} />
+          </mesh>
+          {/* Entre 10 y 17 (world 28) */}
+          <mesh position={[13.5, 0.25, 0]}>
+            <boxGeometry args={[4, 4.5, 0.5]} />
+            <meshStandardMaterial color="#2a2f35" roughness={0.9} />
+          </mesh>
+          {/* Lateral derecho desde 17 */}
+          <mesh position={[26.875, 0.25, 0]}>
+            <boxGeometry args={[16.75, 4.5, 0.5]} />
+            <meshStandardMaterial color="#2a2f35" roughness={0.9} />
+          </mesh>
+        </group>
+
+
         {/* Techo superior plano - Solo visible afuera */}
         <mesh position={[0, 3, 0]} rotation={[-Math.PI / 2, 0, 0]} visible={!isInside}>
           <planeGeometry args={[70.5, 80]} />
@@ -1118,44 +1204,41 @@ function WarehouseBuilding({ playerPos }) {
 
       <group visible={!isInside}>
         <group key="win_front_left">
-        <mesh position={[-16, 9.5, 5.05]}>
-          <boxGeometry args={[3, 4, 0.2]} />
-          <meshStandardMaterial
-            color="#4a5568"
-            roughness={0.2}
-            metalness={0.8}
-            transparent
-            opacity={wallOpacity}
-            polygonOffset
-            polygonOffsetFactor={1}
-          />
-        </mesh>
-        <mesh position={[-16, 6, 5.3]}>
-          <boxGeometry args={[4.2, 3, 0.6]} />
-          <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
-        </mesh>
-      </group>
-
-      {[14, 21, 28].map((x, j) => (
-        <group key={`win_front_right_${j}`}>
-          <mesh position={[x, 9.5, 5.05]}>
-            <boxGeometry args={[3, 4, 0.2]} />
+          <mesh position={[-16, 9.5, 5.05]}>
+            <boxGeometry args={[3, 4, 0.05]} />
             <meshStandardMaterial
-              color="#4a5568"
-              roughness={0.2}
-              metalness={0.8}
+              color="#a0c0e0"
+              roughness={0.1}
+              metalness={0.9}
               transparent
-              opacity={wallOpacity}
-              polygonOffset
-              polygonOffsetFactor={1}
+              opacity={0.15}
             />
           </mesh>
-          <mesh position={[x, 6, 5.3]}>
+          <mesh position={[-16, 6, 5.3]}>
             <boxGeometry args={[4.2, 3, 0.6]} />
-            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} polygonOffset polygonOffsetFactor={1} />
+            <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} />
           </mesh>
         </group>
-      ))}
+
+        {[14, 21, 28].map((x, j) => (
+          <group key={`win_front_right_${j}`}>
+            <mesh position={[x, 9.5, 5.05]}>
+              <boxGeometry args={[3, 4, 0.05]} />
+              <meshStandardMaterial
+                color="#a0c0e0"
+                roughness={0.1}
+                metalness={0.9}
+                transparent
+                opacity={0.15}
+              />
+            </mesh>
+            <mesh position={[x, 6, 5.3]}>
+              <boxGeometry args={[4.2, 3, 0.6]} />
+              <meshStandardMaterial color="#f0efe9" roughness={0.9} transparent opacity={wallOpacity} />
+            </mesh>
+          </group>
+        ))}
+
 
       </group>{/* fin visible={!isInside} - ventanas frontales */}
 
@@ -1247,6 +1330,68 @@ function WarehouseBuilding({ playerPos }) {
           </Text3D>
         </Center>
       </group>
+
+      {/* Entrada Balcón (detrás del letrero UNViMe) - 2 Pares de puertas dobles */}
+      <group position={[-0.5, 9.25, 5]} visible={!isInside}>
+        {/* Par Izquierdo */}
+        <group position={[-1.5, 0, 0]}>
+          {/* Marco Exterior */}
+          <mesh>
+            <boxGeometry args={[4.2, 5.2, 0.15]} />
+            <meshStandardMaterial color="#1a1e24" />
+          </mesh>
+          {/* Puertas */}
+          {[-1, 1].map((x) => (
+            <group key={`balcony_door_l_${x}`} position={[x, 0, 0.05]}>
+              <mesh>
+                <boxGeometry args={[2, 4.8, 0.1]} />
+                <meshStandardMaterial color="#0d0c0b" transparent opacity={0.7} metalness={0.9} roughness={0.1} />
+              </mesh>
+              {/* Marco interno fino */}
+              <mesh>
+                <boxGeometry args={[2, 4.8, 0.1]} />
+                <meshStandardMaterial color="#333" wireframe />
+              </mesh>
+              {/* Picaporte */}
+              <mesh position={[x > 0 ? -0.8 : 0.8, 0, 0.05]}>
+                <boxGeometry args={[0.05, 0.6, 0.1]} />
+                <meshStandardMaterial color="#888" metalness={1} roughness={0.2} />
+              </mesh>
+            </group>
+          ))}
+        </group>
+
+        <group position={[2.5, 0, 0]}>
+          {/* Marco Exterior */}
+          <mesh>
+            <boxGeometry args={[3.5, 5.2, 0.15]} />
+            <meshStandardMaterial color="#1a1e24" />
+          </mesh>
+          {/* Puertas */}
+          {[-1, 1].map((x) => (
+            <group key={`balcony_door_l_${x}`} position={[x, 0, 0.05]}>
+              <mesh>
+                <boxGeometry args={[2, 4.8, 0.1]} />
+                <meshStandardMaterial color="#0d0c0b" transparent opacity={0.7} metalness={0.9} roughness={0.1} />
+              </mesh>
+              {/* Marco interno fino */}
+              <mesh>
+                <boxGeometry args={[2, 4.8, 0.1]} />
+                <meshStandardMaterial color="#333" wireframe />
+              </mesh>
+              {/* Picaporte */}
+              <mesh position={[x > 0 ? -0.8 : 0.8, 0, 0.05]}>
+                <boxGeometry args={[0.05, 0.6, 0.1]} />
+                <meshStandardMaterial color="#888" metalness={1} roughness={0.2} />
+              </mesh>
+            </group>
+          ))}
+        </group>
+
+
+      </group>
+
+
 
       {/* Puertas de entrada eliminadas por pedido - bloque solido removido */}
 
@@ -1573,8 +1718,8 @@ function LBand({
 }
 
 function SidewalkAndStreet() {
-  const extX = 100;
-  const extZ = -100;
+  const extX = 65;
+  const extZ = -85;
   return (
     <group position={[0, -0.14, 0]}>
       <LBand
@@ -1891,6 +2036,12 @@ function MovementController({ onPositionUpdate, teleportPos, joystickRef }) {
       pos.add(velocity);
     }
 
+    // Limit movement boundaries
+    // X: From left fence to right area
+    pos.x = THREE.MathUtils.clamp(pos.x, -22, 55);
+    // Z: From deep inside the lab to the front gate area
+    pos.z = THREE.MathUtils.clamp(pos.z, -75, 12);
+
     onPositionUpdate?.(pos.clone());
     invalidate();
   });
@@ -1927,8 +2078,10 @@ function CameraController({ activeId, playerPos }) {
 const ProjectFrame = React.memo(function ProjectFrame({
   project,
   index,
+  positions,
   activeId,
   setActiveId,
+  onOpenOverlay,
 }) {
   const ref = useRef();
   const [hovered, setHover] = useState(false);
@@ -1936,14 +2089,9 @@ const ProjectFrame = React.memo(function ProjectFrame({
 
   useCursor(hovered);
 
-  const imgUrl =
-    project.image || (Array.isArray(project.images) ? project.images[0] : null);
-  const isVideo = typeof imgUrl === "string" && imgUrl.endsWith(".mp4");
-  let safeImg = isVideo
-    ? "/www.citax.com.ar_.png"
-    : imgUrl || "/willitrain.png";
-  if (safeImg.includes("github")) safeImg = "/snake.png";
+  const pedHeight = TAG_HEIGHTS[project.tag] ?? DEFAULT_PED_HEIGHT;
 
+  // Robust image resolution — explicit fallback prop, no string-sniffing
   const resolve = useCallback((p) => {
     if (!p) return "";
     if (p.startsWith("http")) return p;
@@ -1957,9 +2105,20 @@ const ProjectFrame = React.memo(function ProjectFrame({
     return import.meta.env.BASE_URL + encodeURI(clean);
   }, []);
 
+  // Pick display image: prefer first non-video from images[], else fallback
+  const rawImg = useMemo(() => {
+    const candidates = [
+      ...(Array.isArray(project.images) ? project.images : []),
+      project.image,
+    ].filter(Boolean);
+    const nonVideo = candidates.find((p) => !p.endsWith(".mp4"));
+    return nonVideo || "/SimpleBuyPedidos.png";
+  }, [project]);
+
+  const safeImg = resolve(rawImg);
+
   const gridX = positions[index][0] * SPACING;
   const gridZ = positions[index][1] * SPACING;
-  const pedHeight = 0.5 + (index % 3) * 0.8;
   const imgRef = useRef();
 
   useFrame((state, delta) => {
@@ -1982,7 +2141,12 @@ const ProjectFrame = React.memo(function ProjectFrame({
       position={[gridX, 0, gridZ]}
       onClick={(e) => {
         e.stopPropagation();
-        setActiveId(isActive ? null : index);
+        if (isActive) {
+          setActiveId(null);
+        } else {
+          setActiveId(index);
+          onOpenOverlay?.(index);
+        }
       }}
       onPointerOver={(e) => {
         e.stopPropagation();
@@ -2018,11 +2182,10 @@ const ProjectFrame = React.memo(function ProjectFrame({
             <planeGeometry args={[3.2, 3.2 * 0.65 + 0.6]} />
             <meshBasicMaterial color={isActive ? "#e5e3dc" : "#fcfbf8"} />
           </mesh>
-          <Image
-            url={resolve(safeImg)}
-            transparent
-            position={[0, 0.2, 0]}
+          <SafeImage
+            url={safeImg}
             scale={[3, 3 * 0.65]}
+            position={[0, 0.2, 0]}
           />
           <Text
             position={[0, -1.1, 0]}
@@ -2035,138 +2198,15 @@ const ProjectFrame = React.memo(function ProjectFrame({
           </Text>
         </Billboard>
       </group>
-
-      {isActive && (
-        <Html position={[2, pedHeight + 2, 2]} center zIndexRange={[100, 0]}>
-          <div
-            style={{
-              width: "min(85vw, 380px)",
-              padding: "24px",
-              background: "rgba(252,251,248,0.85)",
-              backdropFilter: "blur(12px)",
-              border: "1px solid rgba(0,0,0,0.05)",
-              borderRadius: "12px",
-              color: "#1a1814",
-              textAlign: "left",
-              animation: "fadeIn 0.4s ease forwards",
-              opacity: 0,
-              boxShadow: "0 20px 40px rgba(26,24,20,0.1)",
-              pointerEvents: "auto",
-            }}
-          >
-            <style>{`@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }`}</style>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "12px",
-              }}
-            >
-              <span
-                style={{
-                  fontSize: "10px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.2em",
-                  color: "#6b9b88",
-                }}
-              >
-                {project.tag}
-              </span>
-              <span style={{ fontSize: "11px", color: "#8a837a" }}>
-                {project.year}
-              </span>
-            </div>
-            <h3
-              style={{
-                fontFamily: '"Cormorant Garamond", serif',
-                fontSize: "24px",
-                margin: "0 0 16px",
-                fontWeight: 600,
-              }}
-            >
-              {project.name}
-            </h3>
-            <div style={{ marginBottom: "12px" }}>
-              <strong
-                style={{
-                  display: "block",
-                  fontSize: "11px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.1em",
-                  color: "#7a736a",
-                  marginBottom: "4px",
-                }}
-              >
-                El desafío
-              </strong>
-              <p
-                style={{
-                  fontSize: "13px",
-                  lineHeight: 1.6,
-                  color: "#3a3834",
-                  margin: 0,
-                }}
-              >
-                {project.problem}
-              </p>
-            </div>
-            <div>
-              <strong
-                style={{
-                  display: "block",
-                  fontSize: "11px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.1em",
-                  color: "#7a736a",
-                  marginBottom: "4px",
-                }}
-              >
-                La solución
-              </strong>
-              <p
-                style={{
-                  fontSize: "13px",
-                  lineHeight: 1.6,
-                  color: "#3a3834",
-                  margin: 0,
-                }}
-              >
-                {project.solution}
-              </p>
-            </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveId(null);
-              }}
-              style={{
-                marginTop: "20px",
-                width: "100%",
-                padding: "10px",
-                background: "transparent",
-                border: "1px solid rgba(0,0,0,0.1)",
-                color: "#1a1814",
-                borderRadius: "6px",
-                cursor: "pointer",
-                textTransform: "uppercase",
-                fontSize: "10px",
-                letterSpacing: "0.1em",
-              }}
-            >
-              Cerrar
-            </button>
-          </div>
-        </Html>
-      )}
     </group>
   );
 });
 
-function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosChange, joystickRef }) {
+function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosChange, joystickRef, baseRot = 0, onOpenOverlay }) {
   const groupRef = useRef();
   const [playerPos, setPlayerPos] = useState(new THREE.Vector3(0, 0, 0));
   const [showHint, setShowHint] = useState(true);
+  const positions = useMemo(() => buildPositions(projects.length), [projects.length]);
 
   useFrame((state, delta) => {
     let tX = 0,
@@ -2179,7 +2219,7 @@ function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosC
     if (activeId !== null) {
       tX = -positions[activeId][0] * SPACING;
       tZ = -positions[activeId][1] * SPACING;
-      tY = -(0.5 + (activeId % 3) * 0.8) + 1;
+      tY = -(TAG_HEIGHTS[projects[activeId]?.tag] ?? DEFAULT_PED_HEIGHT) + 1;
     }
     const isMobile = window.innerWidth < 768;
     if (activeId === null) {
@@ -2198,7 +2238,6 @@ function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosC
     groupRef.current.position.z = THREE.MathUtils.lerp(pz, tZ, 4 * delta);
 
     // Smoothly rotate the group - Fixed perspective
-    const baseRot = 0;
     groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, baseRot, 5 * delta);
 
     const moved =
@@ -2216,8 +2255,10 @@ function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosC
           key={p.name + i}
           project={p}
           index={i}
+          positions={positions}
           activeId={activeId}
           setActiveId={setActiveId}
+          onOpenOverlay={onOpenOverlay}
         />
       ))}
       <MovementController 
@@ -2229,51 +2270,37 @@ function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosC
         joystickRef={joystickRef}
       />
       <CameraController activeId={activeId} playerPos={playerPos} />
-      {showHint && (
-        <Html position={[0, 2, 0]} center>
-          <div style={{
-            background: "rgba(0,0,0,0.8)",
-            color: "white",
-            padding: "8px 16px",
-            borderRadius: "20px",
-            fontSize: "12px",
-            whiteSpace: "nowrap",
-            pointerEvents: "none"
-          }}>
-            Moverse con WASD o FLECHAS
-          </div>
-        </Html>
-      )}
+      {/* Old hint removed for the new onboarding cartel */}
+
       {/* WalkingSprite (bot antiguo) removido */}
       <Scenery playerPos={playerPos} />
 
 
-      <mesh position={[41, -0.05, -2]} receiveShadow>
-        <boxGeometry args={[118, 0.1, 22]} />
-        <meshStandardMaterial color="#6b8c54" roughness={1} />
-      </mesh>
+      {/* Pasto base mejorado que rodea el galpón y la entrada */}
+      <group position={[22, -0.05, -35]}>
+        {/* Base principal que rodea el galpón */}
+        <mesh receiveShadow>
+          <boxGeometry args={[80, 0.1, 90]} />
+          <meshStandardMaterial color="#6b8c54" roughness={1} />
+        </mesh>
+        {/* Relleno lateral izquierdo (Newton tree area) */}
+        <mesh position={[-35, 0, 35]} receiveShadow>
+          <boxGeometry args={[15, 0.1, 20]} />
+          <meshStandardMaterial color="#6b8c54" roughness={1} />
+        </mesh>
+      </group>
 
-      <mesh position={[45, -0.05, -28]} receiveShadow>
-        <boxGeometry args={[70, 0.1, 30]} />
-        <meshStandardMaterial color="#6b8c54" roughness={1} />
-      </mesh>
 
-      {/* Relleno de pasto lateral izquierdo */}
-      <mesh position={[-16, -0.05, -15]} receiveShadow>
-        <boxGeometry args={[5, 0.1, 50]} />
-        <meshStandardMaterial color="#6b8c54" roughness={1} />
-      </mesh>
-
-      <mesh position={[0, -0.15, 0]} receiveShadow>
-        <boxGeometry args={[200, 0.1, 200]} />
+      <mesh position={[10, -0.15, -35]} receiveShadow>
+        <boxGeometry args={[140, 0.1, 140]} />
         <meshStandardMaterial color="#f6f4ee" roughness={1} />
         <mesh position={[0, 0.051, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[200, 200, 100, 100]} />
+          <planeGeometry args={[140, 140, 70, 70]} />
           <meshBasicMaterial
             color="#e5e3dc"
             wireframe
             transparent
-            opacity={0.6}
+            opacity={0.4}
           />
         </mesh>
       </mesh>
@@ -2281,10 +2308,132 @@ function SceneGroup({ projects, activeId, setActiveId, teleportPos, onPlayerPosC
   );
 }
 
+
+// --- Onboarding Overlay ---
+
+function OnboardingOverlay({ isMobile, onStart }) {
+  return (
+    <div style={{
+      position: "absolute",
+      inset: 0,
+      zIndex: 100,
+      background: "rgba(13, 12, 11, 0.9)",
+      backdropFilter: "blur(12px)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#edeae4",
+      textAlign: "center",
+      padding: "24px"
+    }}>
+      <div style={{ maxWidth: "420px", width: "100%" }}>
+        <h2 style={{ 
+          fontFamily: "'Cormorant Garamond', serif", 
+          fontSize: "36px", 
+          marginBottom: "16px",
+          color: "#88b09d"
+        }}>
+          Explora la Universidad
+        </h2>
+        
+        <div style={{ 
+          background: "rgba(255,255,255,0.05)", 
+          padding: "24px", 
+          borderRadius: "16px", 
+          marginBottom: "24px",
+          border: "1px solid rgba(255,255,255,0.1)"
+        }}>
+          {isMobile ? (
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{ 
+                width: "60px", 
+                height: "60px", 
+                border: "2px solid #88b09d", 
+                borderRadius: "50%", 
+                margin: "0 auto 12px",
+                position: "relative"
+              }}>
+                <div style={{ 
+                  width: "20px", 
+                  height: "20px", 
+                  background: "#88b09d", 
+                  borderRadius: "50%", 
+                  position: "absolute",
+                  top: "20px",
+                  left: "20px",
+                  animation: "joystickMove 2s infinite ease-in-out"
+                }} />
+              </div>
+              <style>{`
+                @keyframes joystickMove {
+                  0%, 100% { transform: translate(0, 0); }
+                  25% { transform: translate(10px, 0); }
+                  50% { transform: translate(0, 10px); }
+                  75% { transform: translate(-10px, 0); }
+                }
+              `}</style>
+              <p style={{ fontSize: "14px", margin: 0 }}>Usa el <strong>Joystick</strong> en la parte inferior izquierda para moverte.</p>
+            </div>
+          ) : (
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "12px" }}>
+                <div style={{ width: "32px", height: "32px", border: "1px solid #88b09d", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px" }}>W</div>
+              </div>
+              <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "12px" }}>
+                <div style={{ width: "32px", height: "32px", border: "1px solid #88b09d", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px" }}>A</div>
+                <div style={{ width: "32px", height: "32px", border: "1px solid #88b09d", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px" }}>S</div>
+                <div style={{ width: "32px", height: "32px", border: "1px solid #88b09d", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px" }}>D</div>
+              </div>
+              <p style={{ fontSize: "14px", margin: 0 }}>Usa las teclas <strong>WASD</strong> o las <strong>Flechas</strong> para moverte.</p>
+            </div>
+          )}
+          
+          <div style={{ height: "1px", background: "rgba(255,255,255,0.1)", margin: "16px 0" }} />
+          
+          <p style={{ fontSize: "13px", color: "#a19d94", fontStyle: "italic" }}>
+            Tip: ¡Puedes caminar dentro de la universidad para ver los laboratorios y aulas!
+          </p>
+        </div>
+
+        <button 
+          onClick={onStart}
+          style={{
+            padding: "14px 40px",
+            background: "#88b09d",
+            border: "none",
+            borderRadius: "30px",
+            color: "#0d0c0b",
+            fontSize: "14px",
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "transform 0.2s ease, background 0.2s ease",
+            boxShadow: "0 8px 24px rgba(136, 176, 157, 0.3)"
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+          onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+        >
+          COMENZAR EXPERIENCIA
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── MAIN EXPORT ───────────────────────────────────────────────────────────────
 export default function Story3D({ projects, active, onClose }) {
+
   const [activeId, setActiveId] = useState(null);
   const [viewRotation, setViewRotation] = useState(0);
+  const [overlayProject, setOverlayProject] = useState(null);
+
+  const handleOpenOverlay = useCallback((idx) => {
+    setOverlayProject(projects[idx] ?? null);
+  }, [projects]);
+
+  const handleCloseOverlay = useCallback(() => {
+    setOverlayProject(null);
+    setActiveId(null);
+  }, []);
 
   const [teleportPos, setTeleportPos] = useState(null);
   const joystickRef = useRef({ x: 0, z: 0 });
@@ -2303,12 +2452,19 @@ export default function Story3D({ projects, active, onClose }) {
     }
   }, [teleportPos]);
 
+  const [showOnboarding, setShowOnboarding] = useState(true);
+
   // Memoize state setter for ProjectFrame
   const handleSetActiveId = useCallback((id) => setActiveId(id), []);
 
   useEffect(() => {
-    if (!active) setActiveId(null);
+    if (!active) {
+      setActiveId(null);
+      setOverlayProject(null);
+      setShowOnboarding(true); // Reset onboarding when closed
+    }
   }, [active]);
+
 
   const [playerPos, setPlayerPos] = useState(new THREE.Vector3(0, 0, 0));
   const isInside = playerPos.x > -12.2 && playerPos.x < 26.2 && playerPos.z < -12.3 && playerPos.z > -56.2;
@@ -2332,10 +2488,17 @@ export default function Story3D({ projects, active, onClose }) {
           position: "fixed",
           inset: 0,
           zIndex: 60,
-          background: "#fdfbf2",
+          background: "#0d0c0b",
           overflow: "hidden",
         }}
       >
+        {showOnboarding && (
+          <OnboardingOverlay 
+            isMobile={isMobile} 
+            onStart={() => setShowOnboarding(false)} 
+          />
+        )}
+
         {/* Close */}
         <button
           onClick={onClose}
@@ -2372,7 +2535,41 @@ export default function Story3D({ projects, active, onClose }) {
         </button>
 
         {/* Rotate Camera */}
-        {/* Botón rotación removido por bugs */}
+        <button
+          onClick={() => setViewRotation(prev => prev + Math.PI / 2)}
+          style={{
+            position: "absolute",
+            top: "clamp(16px,4vw,32px)",
+            right: "clamp(80px,10vw,100px)",
+            zIndex: 70,
+            background: "rgba(255,255,255,0.9)",
+            border: "none",
+            width: 48,
+            height: 48,
+            borderRadius: "50%",
+            color: "#1a1814",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backdropFilter: "blur(8px)",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          }}
+          title="Rotar vista"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            style={{ transform: `rotate(${viewRotation}rad)`, transition: "transform 0.5s ease" }}
+          >
+            <path d="M23 4v6h-6" />
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+          </svg>
+        </button>
 
         {/* Botones de Navegación Interior - Solo visibles cuando el dino está adentro */}
         <div style={{
@@ -2439,7 +2636,7 @@ export default function Story3D({ projects, active, onClose }) {
             left: "50%",
             transform: "translateX(-50%)",
             zIndex: 70,
-            color: "rgba(26,24,20,0.5)",
+            color: "rgba(255,255,255,0.4)",
             fontSize: 11,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
@@ -2453,7 +2650,72 @@ export default function Story3D({ projects, active, onClose }) {
             : "Click fuera o en cerrar para volver"}
         </div>
 
-        {/* ── Canvas: frameloop="demand" → only renders when invalidate() called ── */}
+        {/* ── Project detail overlay — fixed DOM, no 3D Html clipping — */}
+        {overlayProject && (
+          <div
+            onClick={handleCloseOverlay}
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 80,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "24px",
+              background: "rgba(13,12,11,0.55)",
+              backdropFilter: "blur(4px)",
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: "min(90vw, 400px)",
+                maxHeight: "80vh",
+                overflowY: "auto",
+                padding: "28px",
+                background: "rgba(252,251,248,0.95)",
+                backdropFilter: "blur(16px)",
+                border: "1px solid rgba(0,0,0,0.06)",
+                borderRadius: "16px",
+                color: "#1a1814",
+                textAlign: "left",
+                boxShadow: "0 24px 60px rgba(0,0,0,0.25)",
+                animation: "fadeInUp 0.3s ease forwards",
+              }}
+            >
+              <style>{`@keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }`}</style>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                <span style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.2em", color: "#6b9b88", fontWeight: 600 }}>
+                  {overlayProject.tag}
+                </span>
+                <span style={{ fontSize: "11px", color: "#8a837a" }}>{overlayProject.year}</span>
+              </div>
+              <h3 style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: "26px", margin: "0 0 18px", fontWeight: 600 }}>
+                {overlayProject.name}
+              </h3>
+              {overlayProject.problem && !overlayProject.problem.includes("←") && (
+                <div style={{ marginBottom: "14px" }}>
+                  <strong style={{ display: "block", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: "#7a736a", marginBottom: "6px" }}>El desafío</strong>
+                  <p style={{ fontSize: "13px", lineHeight: 1.65, color: "#3a3834", margin: 0 }}>{overlayProject.problem}</p>
+                </div>
+              )}
+              {overlayProject.solution && !overlayProject.solution.includes("←") && (
+                <div>
+                  <strong style={{ display: "block", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: "#7a736a", marginBottom: "6px" }}>La solución</strong>
+                  <p style={{ fontSize: "13px", lineHeight: 1.65, color: "#3a3834", margin: 0 }}>{overlayProject.solution}</p>
+                </div>
+              )}
+              <button
+                onClick={handleCloseOverlay}
+                style={{ marginTop: "22px", width: "100%", padding: "11px", background: "transparent", border: "1px solid rgba(0,0,0,0.12)", color: "#1a1814", borderRadius: "8px", cursor: "pointer", textTransform: "uppercase", fontSize: "10px", letterSpacing: "0.12em" }}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Canvas: frameloop="demand" → only renders when invalidate() called — */}
         <Canvas
           orthographic
           frameloop="demand"
@@ -2463,9 +2725,10 @@ export default function Story3D({ projects, active, onClose }) {
           }}
           gl={{ antialias: true, maxTextureSize: 2048 }}
         >
-          <color attach="background" args={["#fdfbf2"]} />
-          <fog attach="fog" args={["#fdfbf2", 30, 90]} />
-          <ambientLight intensity={1.1} color="#ffffff" />
+          <color attach="background" args={["#0d0c0b"]} />
+          <fog attach="fog" args={["#0d0c0b", 30, 90]} />
+          <ambientLight intensity={1.5} color="#ffffff" />
+
           <directionalLight
             position={[15, 25, 10]}
             intensity={1.8}
@@ -2479,6 +2742,8 @@ export default function Story3D({ projects, active, onClose }) {
             teleportPos={teleportPos}
             onPlayerPosChange={setPlayerPos}
             joystickRef={joystickRef}
+            baseRot={viewRotation}
+            onOpenOverlay={handleOpenOverlay}
           />
           <Preload all />
         </Canvas>
